@@ -1,0 +1,294 @@
+<!doctype html>
+
+<html lang="am">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hayu Math Kids - Avatars</title>
+<style>
+:root{--bg:#f0fbff;--card:#ffffff;--accent:#1f7a8c;--muted:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans Ethiopic',system-ui,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#e6f7fb 0%,#fff 100%);color:#073642}
+.wrapper{max-width:900px;margin:12px auto;padding:12px}
+.header{display:flex;align-items:center;gap:12px}
+.logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#1f7a8c,#2bb3c7);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+.h1{font-size:20px;margin:0}
+.lead{color:var(--muted);font-size:13px;margin:4px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 20px rgba(10,20,30,0.06);text-align:center}
+.avatar{width:84px;height:84px;border-radius:18px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:22px}
+.avatar.small{width:56px;height:56px;border-radius:12px;font-size:16px}
+.name{font-size:16px;margin:6px 0}
+.presentRow{display:flex;gap:8px;justify-content:center}
+.btn{padding:10px 14px;border-radius:10px;border:0;font-weight:700;font-size:15px}
+.btn-yes{background:linear-gradient(90deg,#10b981,#34d399);color:white}
+.btn-no{background:linear-gradient(90deg,#ef4444,#fb923c);color:white}
+.controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+.playArea{margin-top:14px}
+.questionBox{background:linear-gradient(180deg,#fff,#fbffff);padding:14px;border-radius:12px;box-shadow:0 14px 30px rgba(10,20,30,0.06)}
+.qText{font-size:20px;margin:10px 0}
+.inputRow{display:flex;gap:8px}
+.inputRow input{flex:1;padding:12px;border-radius:10px;border:1px solid #e6eef6;font-size:16px}
+.small{font-size:13px;color:var(--muted)}
+.scoreboard{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.scoreItem{background:#f7fffd;padding:8px 10px;border-radius:10px;min-width:110px}
+.winner{background:linear-gradient(90deg,#fde68a,#f59e0b);color:#2b2b2b}
+/* avatar animations */
+@keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+@keyframes wave{0%{transform:rotate(0)}50%{transform:rotate(8deg)}100%{transform:rotate(0)}}
+.avatar.bob{animation:bob 2200ms ease-in-out infinite}
+.avatar.wave{animation:wave 1600ms ease-in-out infinite}
+/* modal trophy */
+.modal{position:fixed;left:50%;top:18%;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#fffbf0);padding:18px;border-radius:14px;box-shadow:0 30px 60px rgba(10,20,40,0.25);display:none;z-index:1000}
+.modal h3{margin:6px 0}
+/* confetti canvas */
+#confetti{position:fixed;left:0;top:0;pointer-events:none;width:100%;height:100%;z-index:900}
+/* responsive large tap targets */
+button{touch-action:manipulation}
+.footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">Hayu</div>
+    <div>
+      <h1 class="h1">Hayu ሒሳብ ጨዋታ</h1>
+      <div class="lead">ልጆች በአማርኛ 4 ዋና አስተዋዮች ይማሩ። ሞባይል ይቻላል እና እንባይ አቫታሮች አሉ።</div>
+    </div>
+  </div>  <div class="grid" id="roster">
+    <!-- student cards injected here -->
+  </div>  <div class="controls">
+    <button class="btn btn-yes" id="startBtn">ጀምር</button>
+    <button class="btn btn-no" id="resetBtn">እንደገና</button>
+  </div>  <div class="playArea" id="playArea" aria-live="polite"></div>  <div class="scoreboard" id="scoreboard"></div>  <div class="footer">ይህ ፋይል አንድ ኤችቲኤምኤል ነው። ለGitHub Pages ከፍ በማድረግ ይጸናል።</div>
+</div><canvas id="confetti"></canvas>
+
+<div class="modal" id="trophyModal"><div style="text-align:center"><div style="font-size:48px">🏆</div><h3 id="winnerText"></h3><div id="winnerCongrats" class="small"></div></div></div>
+<audio id="applause" src="https://actions.google.com/sounds/v1/people/applause.ogg"></audio><script>
+// Students initial data
+const STUDENTS = [
+  {id:'faruk', name:'ፋሩክ', color:'#EF4444', avatarType:'bob'},
+  {id:'veronica', name:'ቬሮኒካ', color:'#F59E0B', avatarType:'wave'},
+  {id:'seleman', name:'ሰለማን', color:'#10B981', avatarType:'bob'},
+  {id:'hafiz', name:'ሐፊዝ', color:'#3B82F6', avatarType:'wave'},
+  {id:'mursi', name:'ሙርሲ', color:'#8B5CF6', avatarType:'bob'}
+];
+
+// State
+let students = []; // populated from STUDENTS with present flag and scores
+let presentList = [];
+let currentIndex = 0;
+let currentQ = 0;
+const QUESTIONS_PER = 10;
+let usedQuestions = new Set();
+
+// Voice
+const synth = window.speechSynthesis;
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'am-ET';
+  synth.cancel();
+  synth.speak(u);
+}
+
+// Build roster UI
+const rosterEl = document.getElementById('roster');
+const playArea = document.getElementById('playArea');
+const scoreboardEl = document.getElementById('scoreboard');
+const startBtn = document.getElementById('startBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+function init(){
+  students = STUDENTS.map(s=>({...s,present:false,score:0,qIndex:0}));
+  renderRoster();
+  loadProgress();
+}
+
+function renderRoster(){
+  rosterEl.innerHTML = '';
+  students.forEach(s=>{
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div class='avatar ${s.avatarType}' style='background:${s.color}'>${getInitials(s.name)}</div>
+      <div class='name'>${s.name}</div>
+      <div class='presentRow'>
+        <button class='btn btn-yes' data-id='${s.id}' data-val='yes'>አዎ</button>
+        <button class='btn btn-no' data-id='${s.id}' data-val='no'>አይ</button>
+      </div>`;
+    rosterEl.appendChild(div);
+  });
+}
+
+function getInitials(name){
+  // take first two Ethiopic letters
+  return name.slice(0,2);
+}
+
+// Attendance click
+rosterEl.addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if(!b) return;
+  const id = b.dataset.id; const val = b.dataset.val;
+  const st = students.find(x=>x.id===id);
+  if(!st) return;
+  st.present = val==='yes';
+  // visual highlight
+  const card = b.closest('.card');
+  card.style.border = st.present ? '3px solid rgba(16,185,129,0.18)' : '3px solid rgba(239,68,68,0.12)';
+});
+
+startBtn.addEventListener('click', ()=>{
+  presentList = students.filter(s=>s.present);
+  if(presentList.length===0){ alert('አንድ ተማሪ ይመዝገባ።'); return; }
+  presentList.forEach(s=>{s.score=0;s.qIndex=0});
+  usedQuestions.clear();
+  currentIndex = 0; currentQ = 0;
+  updateScoreboard();
+  nextTurn();
+});
+
+resetBtn.addEventListener('click', ()=>{ students.forEach(s=>{s.present=false; s.score=0; s.qIndex=0}); renderRoster(); playArea.innerHTML=''; scoreboardEl.innerHTML=''; usedQuestions.clear(); saveProgress(); });
+
+function updateScoreboard(){
+  scoreboardEl.innerHTML = '';
+  presentList.forEach(s=>{
+    const el = document.createElement('div'); el.className='scoreItem';
+    el.innerHTML = `<div class='small'>${s.name}</div><div style='font-weight:800'>${s.score}</div>`;
+    scoreboardEl.appendChild(el);
+  });
+}
+
+function nextTurn(){
+  // check finished
+  const unfinished = presentList.find(s=>s.qIndex < QUESTIONS_PER);
+  if(!unfinished){ finishAll(); return; }
+  // find next with remaining
+  let idx = currentIndex % presentList.length;
+  for(let i=0;i<presentList.length;i++){
+    const tryi = (idx + i) % presentList.length;
+    if(presentList[tryi].qIndex < QUESTIONS_PER){ currentIndex = tryi; break; }
+  }
+  const student = presentList[currentIndex];
+  presentPrompt(student);
+}
+
+function presentPrompt(student){
+  const header = `${student.name} ፣ ጥያቄ ${student.qIndex + 1} / ${QUESTIONS_PER}`;
+  playArea.innerHTML = `<div class='questionBox'><div class='qText'>${header}</div><div class='qText' id='qText'></div><div class='inputRow'><input id='answer' inputmode='numeric' autocomplete='off' placeholder='መልስን ያስገቡ'><button class='btn btn-yes' id='submitBtn'>ላክ</button></div><div class='small' id='feedback'></div></div>`;
+  // animate avatar in roster
+  highlightAvatar(student.id);
+  // generate question based on progression
+  const q = generateQuestion(student.qIndex + 1);
+  document.getElementById('qText').innerText = q.textAmharic;
+  speak(`${student.name}, ${q.textAmharic}`);
+  // handle submit
+  document.getElementById('submitBtn').onclick = ()=>{ handleAnswer(student, q); };
+}
+
+function highlightAvatar(id){
+  // simple pulse on avatar
+  document.querySelectorAll('.avatar').forEach(a=>a.style.boxShadow='');
+  const idx = students.findIndex(s=>s.id===id);
+  const av = document.querySelectorAll('.avatar')[idx];
+  if(av) av.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)';
+}
+
+function handleAnswer(student, question){
+  const raw = document.getElementById('answer').value.trim();
+  const feedback = document.getElementById('feedback');
+  if(raw===''){ feedback.innerText='መልስ ያስገቡ.'; return; }
+  const num = Number(raw.replace(/[^0-9.-]/g,''));
+  if(!isFinite(num)){ feedback.innerText='ትክክለኛ ቁጥር ያስገቡ.'; return; }
+  if(Math.abs(num - question.answer) < 1e-6){
+    student.score += 10; student.qIndex++;
+    feedback.innerText = `አሪፍ ${student.name}! 10 ነጥብ ተወሰነ.`;
+    speak(`አሪፍ ${student.name}, ትክክለኛ መልስ።`);
+  } else {
+    student.score -= 2; student.qIndex++;
+    feedback.innerText = `ይቅር ${student.name}, ትክክል መልስ ${question.answer} ነው. ተጨማሪ ልምድ ይሰጣል.`;
+    speak(`ይቅር ${student.name}, ትክክል መልስ ${question.answer} ነው.`);
+    // small practice question immediately
+    setTimeout(()=>{ const p = generatePractice(); document.getElementById('qText').innerText = 'ተጨማሪ ልምድ: ' + p.textAmharic; document.getElementById('submitBtn').onclick = ()=>{ const val = Number(document.getElementById('answer').value); if(val===p.answer){ student.score +=5; speak('ጥሩ ልምድ'); } else { speak('ልምድ አይበቃም'); } updateScoreboard(); currentIndex = (currentIndex + 1) % presentList.length; setTimeout(nextTurn,900); }; },700);
+  }
+  updateScoreboard();
+  saveProgress();
+  // move to next after delay
+  setTimeout(()=>{ currentIndex = (currentIndex + 1) % presentList.length; nextTurn(); },900);
+}
+
+function finishAll(){
+  playArea.innerHTML = '<div class="questionBox"><div class="qText">ሁሉም ጨርሷል. ውጤት እዚህ ነው.</div></div>';
+  const sorted = [...presentList].sort((a,b)=>b.score - a.score);
+  let resultHtml = '';
+  sorted.forEach((s,i)=> resultHtml += `<div class='card' style='margin-top:8px'><div class='small'>${i+1}</div><div style='font-weight:800'>${s.name}</div><div>${s.score} ነጥብ</div></div>`);
+  playArea.innerHTML += resultHtml;
+  // tie handling for top 3
+  const top = sorted[0];
+  const tied = sorted.filter(s=>s.score===top.score);
+  if(tied.length>1){
+    // tie-breaker
+    playArea.innerHTML += `<div class='small'>ተድላ አለ. መፈተና ይደረጋል.</div>`;
+    // simple tie-break flow
+    setTimeout(()=>startTieBreaker(tied),1400);
+  } else {
+    celebrate(sorted[0]);
+  }
+  saveHistory(sorted);
+}
+
+function startTieBreaker(tied){
+  presentList = tied; presentList.forEach(s=>{s.qIndex=0}); currentIndex = 0; usedQuestions.clear(); QUESTIONS_PER = 1; nextTurn();
+}
+
+function celebrate(winner){
+  document.getElementById('trophyModal').style.display='block';
+  document.getElementById('winnerText').innerText = `${winner.name} አንደኛ ቦታ`;
+  document.getElementById('winnerCongrats').innerText = `ታላቅ አገልግሎት!`;
+  document.getElementById('applause').play();
+  fireConfetti();
+  setTimeout(()=>document.getElementById('trophyModal').style.display='none',6000);
+}
+
+// Question generators
+function generateQuestion(round){
+  // difficulty scales
+  const base = Math.ceil(round * 1.6);
+  const typeIdx = Math.min(4, Math.ceil(round/2));
+  let a,b,ans,text,explain;
+  const typ = ['add','sub','mul','div','word'][Math.min(4,typeIdx-1)];
+  if(typ==='add'){ a=rnd(1,5*base+5); b=rnd(1,5*base+5); ans=a+b; text=`${a} + ${b} = ?`; explain=`${a} ከ ${b} ጋር = ${ans}`; }
+  else if(typ==='sub'){ a=rnd(5*base,10*base); b=rnd(1,4*base); ans=a-b; text=`${a} - ${b} = ?`; explain=`${a} ውስጥ ከ ${b} ቀንሷል` }
+  else if(typ==='mul'){ a=rnd(2,3*base+6); b=rnd(2,2*base+5); ans=a*b; text=`${a} × ${b} = ?`; explain=`${a} በ ${b} = ${ans}` }
+  else if(typ==='div'){ b=rnd(2,3*base+6); ans=rnd(2,3*base+5); a=b*ans; text=`${a} ÷ ${b} = ?`; explain=`${a} በ ${b} = ${ans}` }
+  else { const who=['አባቱ','እናቱ','ልጁ']; const item=['እንቁላል','መፅሐፍ','ጫማ']; const wA=rnd(2,4*base+6); const wB=rnd(1,3*base+4); ans=wA+wB; text=`${who[rnd(0,who.length-1)]} ${wA} ${item[rnd(0,item.length-1)]} አለ። ከዚህ በኋላ ${wB} ተጨምሯል። አጠፋው ምንድን ነው?`; explain=`${wA} + ${wB} = ${ans}` }
+  // ensure unique
+  if(usedQuestions.has(text)) return generateQuestion(Math.max(1,round-1));
+  usedQuestions.add(text);
+  return {textAmharic: text, answer: ans, explainAmharic: explain};
+}
+function generatePractice(){ const a=rnd(1,12), b=rnd(1,12); return {textAmharic:`${a} + ${b} = ?`, answer:a+b}; }
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min }
+
+// confetti
+function fireConfetti(){
+  const c = document.getElementById('confetti');
+  const ctx = c.getContext('2d');
+  c.width = innerWidth; c.height = innerHeight;
+  const pieces=[]; for(let i=0;i<180;i++){ pieces.push({x:Math.random()*c.width,y:Math.random()*-c.height,vy:2+Math.random()*6,size:6+Math.random()*10,color:`hsl(${Math.random()*360},80%,60%)`}); }
+  let t=0; const iv=setInterval(()=>{ ctx.clearRect(0,0,c.width,c.height); for(const p of pieces){ p.y += p.vy; p.x += Math.sin(t/10 + p.size)*1.2; ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,p.size,p.size*0.6); } t++; },30); setTimeout(()=>{ clearInterval(iv); ctx.clearRect(0,0,c.width,c.height); },6000);
+}
+
+// persistence
+function saveProgress(){ localStorage.setItem('hayu_state', JSON.stringify({students})); }
+function loadProgress(){ const raw = localStorage.getItem('hayu_state'); if(!raw) return; try{ const st = JSON.parse(raw); students = st.students; renderRoster(); }catch(e){ console.warn(e); } }
+function saveHistory(sorted){ // store last result list
+  const history = JSON.parse(localStorage.getItem('hayu_history')||'[]'); const now = new Date().toISOString(); history.unshift({time:now,results:sorted}); localStorage.setItem('hayu_history', JSON.stringify(history.slice(0,20))); }
+
+// init
+init();
+</script></body>
+</html>
