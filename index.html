@@ -150,7 +150,23 @@ function getInitials(name){
   // take first two Ethiopic letters
   return name.slice(0,2);
 }
-
+<script>
+function showConfetti() {
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.position = 'fixed';
+    confetti.style.top = 0;
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.width = '10px';
+    confetti.style.height = '10px';
+    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+    confetti.style.animation = 'fall 3s linear infinite';
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 5000);
+  }
+  speak("እጅግ ደስ ብሎኛል! አንተ አሸናፊ ስለሆንክ!");
+}
+</script>
 // Attendance click
 rosterEl.addEventListener('click', (e)=>{
   const b = e.target.closest('button');
