@@ -166,6 +166,15 @@ function showConfetti() {
   }
   speak("እጅግ ደስ ብሎኛል! አንተ አሸናፊ ስለሆንክ!");
 }
+</script><script>
+function speak(text) {
+  const synth = window.speechSynthesis;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "am-ET"; // Amharic
+  utter.rate = 0.9;
+  synth.cancel();
+  synth.speak(utter);
+}
 </script>
 // Attendance click
 rosterEl.addEventListener('click', (e)=>{
