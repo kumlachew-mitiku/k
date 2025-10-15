@@ -1,295 +1,288 @@
 <!DOCTYPE html>
 <html lang="am">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>የልጆች የመማሪያ ጨዋታ (Kids Learning Game)</title>
-    <style>
-        /* Basic CSS for a clean, educational look */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-        }
-        h1 { color: #007bff; margin-bottom: 20px; }
-        .score {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            color: #28a745;
-            font-weight: bold;
-        }
-        .question-box {
-            border: 2px solid #ccc;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            background-color: #e9ecef;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .question-text {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-        input[type="text"], input[type="number"] {
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 80%;
-            font-size: 1.2em;
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
-        }
-        .submit-btn { background-color: #007bff; color: white; }
-        .submit-btn:hover { background-color: #0056b3; }
-        .next-btn { background-color: #28a745; color: white; }
-        .next-btn:hover { background-color: #1e7e34; }
-        .feedback {
-            margin-top: 15px;
-            font-size: 1.3em;
-            font-weight: bold;
-        }
-        .attendance-screen {
-            background-color: #ffeeba;
-            border: 1px solid #ffc107;
-            padding: 25px;
-            border-radius: 8px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kids Math Game - Faruk, Mursi, Veronica, Selamn, Hafiz</title>
+<style>
+  body {
+    background: linear-gradient(to right, #f9f9f9, #e3f2fd);
+    font-family: "Comic Sans MS", sans-serif;
+    text-align: center;
+    padding: 20px;
+    overflow: hidden; /* Hide overflow to prevent scrollbars from stars */
+  }
+  h1 {
+    color: #2c3e50;
+  }
+  .game-container {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .question-box {
+    background: white;
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  #muteBtn {
+    background-color: #f44336;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    padding: 8px 12px;
+  }
+  #muteBtn:hover {
+    background-color: #d32f2f;
+  }
+  #scoreboard {
+    background: #ffffff;
+    padding: 10px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  #scoreboard h2 {
+    margin: 0 0 10px 0;
+    color: #34495e;
+  }
+  #score-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.1em;
+  }
+
+  /* --- Star Animation --- */
+  .star {
+    position: absolute;
+    top: -20px; /* Start above the screen */
+    color: gold;
+    font-size: 24px;
+    animation: fall linear;
+    pointer-events: none; /* Make stars unclickable */
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+  }
+
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="game-screen">
-            <h1>የልጆች የመማሪያ ጨዋታ</h1>
-            
-            <div class="score">ውጤት (Score): <span id="current-score">0</span></div>
+<audio id="background-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
 
-            <div class="question-box">
-                <div class="question-text" id="question-display"></div>
-                <input type="text" id="answer-input" placeholder="መልስ አስገባ (Enter Answer)">
-                <input type="number" id="answer-input-number" placeholder="መልስ አስገባ (Enter Answer)">
-            </div>
-            
-            <div class="controls">
-                <button class="submit-btn" onclick="checkAnswer()">መልስ ላክ (Submit)</button>
-                <button class="next-btn" onclick="loadNewQuestion()">ቀጣይ (Next)</button>
-            </div>
-            
-            <div class="feedback" id="feedback"></div>
-            
-            <p>
-                <button onclick="setGameMode('amharic')">የአማርኛ ንባብ (Amharic Reading)</button>
-                <button onclick="setGameMode('math')">የቃል ችግሮች (Word Problems)</button>
-            </p>
-        </div>
+<div class="game-container">
+  <button id="muteBtn" onclick="toggleMute()">Mute</button>
 
-        <div id="attendance-screen" class="attendance-screen" style="display: none;">
-            <h2>መጀመሪያ ይግቡ (Please Log In First)</h2>
-            <p>ልጁ ከመጀመሩ በፊት የይለፍ ቃል ያስገቡ።</p>
-            <input type="text" id="attendance-code" placeholder="የይለፍ ቃል (Secret Code)">
-            <button class="submit-btn" onclick="checkAttendanceCode()">ግባ (Enter)</button>
-            <div class="feedback" id="attendance-feedback"></div>
-        </div>
-    </div>
+  <h1>Welcome to the Math Game</h1>
+  
+  <div id="scoreboard">
+    <h2>Scores</h2>
+    <ul id="score-list"></ul>
+  </div>
 
-    <script>
-        // --- CONFIGURATION ---
-        const SECRET_CODE = "1234"; // CHANGE THIS SECRET CODE!
-        const ATTENDANCE_KEY = "kid_attended_today";
-        const QUESTION_DATA = {
-            amharic: [
-                { q: "ሰላም ማለት ምን ማለት ነው?", a: "Hello" },
-                { q: "አመሰግናለሁ", a: "Thank you" },
-                { q: "እንደምነህ?", a: "How are you" },
-                { q: "ብዕር", a: "Pen" },
-                { q: "መጽሐፍ", a: "Book" }
-            ],
-            math: [
-                // Word Problems - The answer must be a number
-                { q: "አንድ ልጅ 5 ፖም አለው. እናቱ 3 ተጨማሪ ከሰጠችው, አሁን ስንት ፖም አለው?", a: 8 }, // 5 + 3
-                { q: "በቅርጫት ውስጥ 10 ብርቱካን ነበሩ. ጓደኛህ 4 ከወሰደ, ስንት ይቀራል?", a: 6 }, // 10 - 4
-                { q: "ሁለት ጓደኞች አሉ. እያንዳንዳቸው 2 ከረሜላ አላቸው. በአጠቃላይ ስንት ከረሜላ አላቸው?", a: 4 }, // 2 * 2
-                { q: "አንድ ወፍ 4 እግሮች ያሉት 2 ጠረጴዛዎች አሉት. ስንት እግሮች አሉ?", a: 8 } // 4 * 2
-            ]
-        };
+  <h2 id="playerName"></h2>
+  <div class="question-box">
+    <h3 id="question"></h3>
+    <input type="number" id="answer" placeholder="Your answer">
+    <br>
+    <button onclick="checkAnswer()">Submit</button>
+  </div>
+</div>
 
-        // --- GLOBAL VARIABLES ---
-        let score = 0;
-        let currentQuestion = null;
-        let gameMode = 'amharic'; // Default mode
-        
-        // --- DOM ELEMENTS ---
-        const gameScreen = document.getElementById('game-screen');
-        const attendanceScreen = document.getElementById('attendance-screen');
-        const questionDisplay = document.getElementById('question-display');
-        const answerInputText = document.getElementById('answer-input');
-        const answerInputNumber = document.getElementById('answer-input-number');
-        const scoreDisplay = document.getElementById('current-score');
-        const feedbackDisplay = document.getElementById('feedback');
+<script>
+// --- DOM Elements ---
+const playerNameEl = document.getElementById("playerName");
+const questionEl = document.getElementById("question");
+const answerEl = document.getElementById("answer");
+const scoreListEl = document.getElementById("score-list");
+const muteBtn = document.getElementById("muteBtn");
+const backgroundMusic = document.getElementById("background-music");
 
-        // --- ATTENDANCE FUNCTIONS ---
 
-        function isKidPresent() {
-            // Check if the attendance key is set in the browser's local storage
-            return localStorage.getItem(ATTENDANCE_KEY) === 'true';
-        }
+// --- Game State ---
+const players = ["Faruk", "Mursi", "Veronica", "Selamn", "Hafiz"];
+let playerIndex = 0;
+let correctAnswer = 0;
+let isMuted = false;
 
-        function showAttendanceScreen() {
-            gameScreen.style.display = 'none';
-            attendanceScreen.style.display = 'block';
-        }
+// Initialize scores for each player
+const scores = {};
+players.forEach(player => {
+  scores[player] = 0;
+});
 
-        function showGameScreen() {
-            attendanceScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            loadNewQuestion(); // Load the first question when game starts
-        }
+const compliments = [
+  ["ጎበዝ!", "Clever!"],
+  ["ልክ ነህ!", "You are correct!"],
+  ["በጣም ጥሩ!", "Very good!"],
+  ["በትክክል!", "Exactly!"],
+  ["አንተ በጣም ጎበዝ ነህ!", "You are so smart!"],
+  ["ፈጣን ነህ!", "You have an excellent brain!"],
+  ["ኤክሰለንት!", "What a clever answer!"],
+  ["አንተ ጀግና ነህ!", "You are a hero!"],
+  ["ጥሩ አስተሳሰብ ነው!", "Great thinking!"],
+  ["ዋው!", "Wow!"],
+  ["አገኘኸው!", "You got it!"],
+  ["አንተ ኮከብ ነህ!", "You are a star!"],
+  ["ግሩም ነው!", "Fantastic!"]
+];
 
-        function checkAttendanceCode() {
-            const codeInput = document.getElementById('attendance-code').value;
-            const feedback = document.getElementById('attendance-feedback');
 
-            if (codeInput === SECRET_CODE) {
-                // Correct code! Set the key and start the game.
-                localStorage.setItem(ATTENDANCE_KEY, 'true');
-                feedback.innerHTML = '<span style="color: green;">ትክክል! ጨዋታው ተጀምሯል።</span>';
-                setTimeout(showGameScreen, 1500);
-            } else {
-                feedback.innerHTML = '<span style="color: red;">ስህተት ነው. እንደገና ሞክር።</span>';
-            }
-            document.getElementById('attendance-code').value = '';
-        }
+// --- Sound Functions ---
+function speak(text, lang = "am-ET") {
+  if (isMuted) return; // Don't speak if muted
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang;
+  speechSynthesis.speak(utter);
+}
 
-        // --- GAME LOGIC FUNCTIONS ---
+function toggleMute() {
+  isMuted = !isMuted;
+  backgroundMusic.muted = isMuted;
+  muteBtn.innerText = isMuted ? "Unmute" : "Mute";
+  
+  // If muting, stop any currently speaking text
+  if (isMuted) {
+    speechSynthesis.cancel();
+  }
+}
 
-        function setGameMode(mode) {
-            gameMode = mode;
-            // Toggle input fields based on mode
-            if (mode === 'amharic') {
-                answerInputText.style.display = 'block';
-                answerInputNumber.style.display = 'none';
-                answerInputText.value = '';
-                answerInputText.focus();
-            } else { // math mode
-                answerInputText.style.display = 'none';
-                answerInputNumber.style.display = 'block';
-                answerInputNumber.value = '';
-                answerInputNumber.focus();
-            }
-            feedbackDisplay.textContent = '';
-            loadNewQuestion();
-        }
 
-        function loadNewQuestion() {
-            if (!isKidPresent()) {
-                showAttendanceScreen();
-                return;
-            }
+// --- Game Logic ---
+function updateScoreboard() {
+  scoreListEl.innerHTML = ""; // Clear existing scores
+  for (const player in scores) {
+    const li = document.createElement("li");
+    li.innerText = `${player}: ${scores[player]}`;
+    scoreListEl.appendChild(li);
+  }
+}
 
-            const questions = QUESTION_DATA[gameMode];
-            if (questions.length === 0) {
-                questionDisplay.textContent = "ጥያቄ የለም።";
-                return;
-            }
+function newQuestion() {
+  answerEl.value = "";
+  answerEl.focus();
 
-            // Select a random question
-            const randomIndex = Math.floor(Math.random() * questions.length);
-            currentQuestion = questions[randomIndex];
+  const name = players[playerIndex];
+  playerNameEl.innerText = "Your turn, " + name + "!";
+  speak("እንኳን ደህና መጣህ " + name);
 
-            questionDisplay.textContent = currentQuestion.q;
-            feedbackDisplay.textContent = '';
-            
-            // Clear and focus the correct input field
-            if (gameMode === 'amharic') {
-                answerInputText.value = '';
-                answerInputText.focus();
-            } else {
-                answerInputNumber.value = '';
-                answerInputNumber.focus();
-            }
-        }
+  const a = Math.floor(Math.random() * 10) + 1;
+  const b = Math.floor(Math.random() * 10) + 1;
+  const operators = ["+", "-", "×", "÷"];
+  const op = operators[Math.floor(Math.random() * operators.length)];
 
-        function checkAnswer() {
-            if (!currentQuestion) return;
+  let questionText = "";
+  if (op === "+") {
+    correctAnswer = a + b;
+    questionText = `${a} + ${b}`;
+  } else if (op === "-") {
+    // Ensure the result is not negative for simplicity
+    const max = Math.max(a, b);
+    const min = Math.min(a, b);
+    correctAnswer = max - min;
+    questionText = `${max} - ${min}`;
+  } else if (op === "×") {
+    correctAnswer = a * b;
+    questionText = `${a} × ${b}`;
+  } else if (op === "÷") {
+    const dividend = a * b;
+    correctAnswer = b;
+    questionText = `${dividend} ÷ ${a}`;
+  }
 
-            let userAnswer;
-            let correctAnswer = currentQuestion.a;
+  questionEl.innerText = questionText;
+  speak("ጥያቄ " + questionText.replace('×', 'ሲባዛ').replace('÷', 'ሲካፈል'));
+}
 
-            if (gameMode === 'amharic') {
-                // For Amharic, use text and convert to lowercase for simple matching
-                userAnswer = answerInputText.value.trim().toLowerCase();
-                correctAnswer = String(correctAnswer).toLowerCase();
-            } else {
-                // For Math, use number input and convert to a number
-                userAnswer = parseInt(answerInputNumber.value, 10);
-                correctAnswer = parseInt(correctAnswer, 10);
-            }
+function checkAnswer() {
+  // Start music on the first user interaction
+  if (backgroundMusic.paused) {
+      backgroundMusic.volume = 0.1; // Set soft volume
+      backgroundMusic.play().catch(e => console.log("Autoplay was prevented by the browser."));
+  }
 
-            // Check if the answer is correct
-            if (userAnswer === correctAnswer) {
-                feedbackDisplay.innerHTML = '<span style="color: green;">✅ ትክክል!</span>';
-                score++;
-                scoreDisplay.textContent = score;
-                // Automatically load next question after a short delay
-                setTimeout(loadNewQuestion, 1500);
-            } else {
-                feedbackDisplay.innerHTML = '<span style="color: red;">❌ ስህተት ነው. እንደገና ሞክር።</span>';
-            }
-        }
+  const userAnswer = parseInt(answerEl.value);
+  if (userAnswer === correctAnswer) {
+    // Update score for the current player
+    const currentPlayer = players[playerIndex];
+    scores[currentPlayer]++;
+    updateScoreboard();
+    
+    // Show compliment and play sound
+    const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+    alert(randomCompliment[0] + " - " + randomCompliment[1]);
+    speak(randomCompliment[0]);
+    
+    // Trigger star animation
+    createStars();
+    
+    // Move to the next player
+    playerIndex = (playerIndex + 1) % players.length;
+    
+    // Ask the next question after a short delay
+    setTimeout(newQuestion, 500);
+  } else {
+    alert("ትክክል አይደለም, try again!");
+    speak("ትክክል አይደለም");
+  }
+}
 
-        // --- INITIALIZATION ---
-        function init() {
-            // Check attendance when the page loads
-            if (isKidPresent()) {
-                showGameScreen();
-                setGameMode('amharic'); // Start with the default mode
-            } else {
-                showAttendanceScreen();
-            }
+// Function to create falling stars animation
+function createStars() {
+  const starCount = 20;
+  for (let i = 0; i < starCount; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.innerHTML = "✨"; // You can use '★' or other characters
+    star.style.left = `${Math.random() * 100}%`; // Random horizontal position
+    star.style.animationDuration = `${Math.random() * 2 + 3}s`; // Random duration (3-5s)
+    star.style.animationDelay = `${Math.random() * 2}s`; // Random start delay
+    star.style.fontSize = `${Math.random() * 15 + 10}px`; // Random size
+    
+    // Remove the star from the DOM after animation ends to save memory
+    star.addEventListener('animationend', () => {
+      star.remove();
+    });
+    
+    document.body.appendChild(star);
+  }
+}
 
-            // Allow hitting Enter key to check answer
-            document.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && gameScreen.style.display !== 'none') {
-                    checkAnswer();
-                } else if (e.key === 'Enter' && attendanceScreen.style.display !== 'none') {
-                    checkAttendanceCode();
-                }
-            });
-        }
+// --- Initial Game Start ---
+updateScoreboard();
+newQuestion();
 
-        // Run the initialization function
-        init();
+// Allow submitting with the Enter key
+answerEl.addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        document.querySelector("button").click(); // Trigger the submit button click
+    }
+});
 
-    </script>
-
+</script>
 </body>
 </html>
