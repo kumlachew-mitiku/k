@@ -3,62 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kids Math Game - 10 Rounds of Fun!</title>
+<title>Ultimate Kids Math Challenge!</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
-  body {
-    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-    font-family: 'Roboto', "Comic Sans MS", sans-serif;
-    text-align: center;
-    padding: 20px;
-    overflow: hidden;
-    color: #333;
+  :root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --wrong-color: #e74c3c;
+    --light-bg: #ecf0f1;
+    --dark-text: #2c3e50;
   }
 
-  /* --- Main Game and Game Over Containers --- */
-  .game-container, #game-over-screen {
-    max-width: 500px;
+  body {
+    background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+    font-family: 'Nunito', sans-serif;
+    padding: 20px;
+    overflow: hidden;
+    color: var(--dark-text);
+  }
+
+  .game-wrapper {
+    display: flex;
+    max-width: 900px;
     margin: 20px auto;
     background: rgba(255, 255, 255, 0.9);
-    padding: 25px;
     border-radius: 25px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    backdrop-filter: blur(4px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.18);
   }
 
-  #game-over-screen {
-    display: none; /* Hidden by default */
+  /* --- Player Sidebar --- */
+  .player-sidebar {
+    width: 250px;
+    padding: 20px;
+    border-right: 2px solid var(--light-bg);
+  }
+  .player-sidebar h2 {
+    text-align: center;
+    margin-top: 0;
+  }
+  .player-card {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  .player-card.active {
+    background-color: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.5);
+  }
+  .player-info {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  .progress-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    height: 10px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--secondary-color);
+    transition: width 0.5s ease-in-out;
+  }
+  .player-card.active .progress-bar {
+    background-color: white;
   }
 
-  h1, h2 {
-    color: #2c3e50;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  /* --- Main Game Area --- */
+  .game-container {
+    flex-grow: 1;
+    padding: 20px 40px;
+    text-align: center;
   }
-  
-  #question {
-    font-size: 2.5em;
+
+  #current-player-turn {
+    font-size: 1.5em;
     font-weight: bold;
-    color: #3498db;
+  }
+
+  #question {
+    font-size: 2.2em;
+    min-height: 100px;
     margin: 20px 0;
+    color: var(--primary-color);
+    font-weight: 700;
   }
 
   input[type="number"] {
-    width: 60%;
-    padding: 10px;
+    width: 50%;
+    padding: 12px;
     border-radius: 10px;
     border: 2px solid #ddd;
     text-align: center;
-    font-size: 1.2em;
-    margin-bottom: 10px;
+    font-size: 1.5em;
+    margin-bottom: 15px;
   }
-
+  
   button {
-    background-color: #2ecc71;
+    background-color: var(--secondary-color);
     color: white;
     border: none;
-    padding: 12px 25px;
+    padding: 12px 30px;
     border-radius: 10px;
     font-size: 18px;
     cursor: pointer;
@@ -68,76 +123,63 @@
     background-color: #27ae60;
     transform: scale(1.05);
   }
-  
   #muteBtn {
-    background-color: #e74c3c;
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    padding: 8px 12px;
-  }
-  #muteBtn:hover {
-    background-color: #c0392b;
+    background-color: var(--wrong-color); position: fixed;
+    top: 15px; right: 15px; z-index: 100;
   }
 
-  /* --- Scoreboard and Round Counter --- */
-  #status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  /* --- Winner Screen --- */
+  #winner-screen {
+    display: none; /* Hidden by default */
+    text-align: center;
+    padding: 40px;
   }
-  #scoreboard h2, #round-counter h2 {
-    margin: 0;
-    font-size: 1.2em;
-    color: #34495e;
+  #winner-name {
+    font-size: 3em;
+    color: #f1c40f;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
   }
-  #score-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 15px;
-    font-size: 1.1em;
-  }
-  #round-display {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #e67e22;
+  #dancing-char {
+    width: 250px;
+    height: 250px;
+    margin: 20px auto;
   }
 
-  /* --- Leaderboard Styling --- */
-  #leaderboard {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-  }
-  #leaderboard li {
-    background: #ecf0f1;
-    margin: 8px 0;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 1.2em;
-    display: flex;
-    justify-content: space-between;
-  }
-  #leaderboard li.winner {
-    background: #f1c40f;
-    color: #333;
-    font-weight: bold;
-  }
-  .winner::after {
-    content: ' 🏆';
-  }
-
-  /* --- Star Animation --- */
+  /* --- Animations --- */
   .star {
     position: absolute; top: -20px; color: gold; font-size: 24px;
-    animation: fall linear; pointer-events: none;
+    animation: fall 3s linear; pointer-events: none;
   }
   @keyframes fall {
     to { transform: translateY(100vh); opacity: 0; }
   }
+  .shake {
+    animation: shake 0.5s;
+  }
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+  }
+
+  @media (max-width: 768px) {
+    .game-wrapper {
+        flex-direction: column;
+    }
+    .player-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid var(--light-bg);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .player-card {
+        width: 120px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -146,71 +188,70 @@
 
 <button id="muteBtn" onclick="toggleMute()">Mute</button>
 
-<div class="game-container" id="game-container">
-  <h1>Math Game Challenge</h1>
-  
-  <div id="status-bar">
-    <div id="scoreboard">
-      <h2>Scores</h2>
-      <ul id="score-list"></ul>
-    </div>
-    <div id="round-counter">
-      <h2>Round</h2>
-      <div id="round-display">1 / 10</div>
+<div class="game-wrapper">
+  <div class="player-sidebar" id="player-sidebar">
+    <h2>Players</h2>
+  </div>
+
+  <div class="game-container" id="game-container">
+    <h1 id="current-player-turn"></h1>
+    <div id="question-box">
+      <h3 id="question"></h3>
+      <input type="number" id="answer" placeholder="መልስህን እዚህ አስገባ">
+      <br>
+      <button onclick="checkAnswer()">Submit</button>
     </div>
   </div>
 
-  <h2 id="playerName"></h2>
-  <div class="question-box">
-    <h3 id="question"></h3>
-    <input type="number" id="answer" placeholder="Your answer">
-    <br>
-    <button onclick="checkAnswer()">Submit</button>
+  <div id="winner-screen">
+    <h1>🏆 ሻምፒዮን! 🏆</h1>
+    <img id="dancing-char" src="https://media.tenor.com/a2sP52-0i7EAAAAi/minions-dance.gif" alt="Dancing Character">
+    <h2 id="winner-name"></h2>
+    <button onclick="initializeGame()">Play Again</button>
   </div>
 </div>
-
-<div id="game-over-screen">
-  <h1>Game Over!</h1>
-  <h2>Final Leaderboard</h2>
-  <ul id="leaderboard"></ul>
-  <button onclick="restartGame()">Play Again</button>
-</div>
-
 
 <script>
 // --- DOM Elements ---
+const gameWrapper = document.querySelector('.game-wrapper');
 const gameContainer = document.getElementById('game-container');
-const gameOverScreen = document.getElementById('game-over-screen');
-const playerNameEl = document.getElementById("playerName");
-const questionEl = document.getElementById("question");
-const answerEl = document.getElementById("answer");
-const scoreListEl = document.getElementById("score-list");
-const leaderboardEl = document.getElementById('leaderboard');
-const roundDisplayEl = document.getElementById('round-display');
-const muteBtn = document.getElementById("muteBtn");
-const backgroundMusic = document.getElementById("background-music");
+const winnerScreen = document.getElementById('winner-screen');
+const playerSidebar = document.getElementById('player-sidebar');
+const currentPlayerTurnEl = document.getElementById('current-player-turn');
+const questionEl = document.getElementById('question');
+const answerEl = document.getElementById('answer');
+const winnerNameEl = document.getElementById('winner-name');
+const muteBtn = document.getElementById('muteBtn');
+const backgroundMusic = document.getElementById('background-music');
 
-// --- Game State ---
-const players = ["Faruk", "Mursi", "Veronica", "Selamn", "Hafiz"];
-const scores = {};
-const MAX_ROUNDS = 10;
-
-let playerIndex = 0;
+// --- Game State & Config ---
+const playerNames = ["Faruk", "Mursi", "Veronica", "Selamn", "Hafiz"];
+let players = [];
+let currentPlayerIndex = 0;
 let correctAnswer = 0;
 let isMuted = false;
-let correctAnswersCount = 0;
+let winnerSoundInterval = null;
+const TOTAL_QUESTIONS_PER_PLAYER = 10;
 
 const compliments = [
-  ["ጎበዝ!", "Clever!"], ["ልክ ነህ!", "You are correct!"], ["በጣም ጥሩ!", "Very good!"],
-  ["በትክክል!", "Exactly!"], ["አንተ በጣም ጎበዝ ነህ!", "You are so smart!"],
-  ["ፈጣን ነህ!", "Excellent!"], ["አንተ ጀግና ነህ!", "You are a hero!"],
-  ["ዋው!", "Wow!"], ["አገኘኸው!", "You got it!"], ["አንተ ኮከብ ነህ!", "You are a star!"]
+  "ጎበዝ!", "ልክ ነህ!", "በጣም ጥሩ!", "በትክክል!", "አንተ በጣም ጎበዝ ነህ!",
+  "ፈጣን ነህ!", "ኤክሰለንት!", "አንተ ጀግና ነህ!", "ጥሩ አስተሳሰብ ነው!", "ዋው!",
+  "አገኘኸው!", "አንተ ኮከብ ነህ!", "ግሩም ነው!"
 ];
+
+const amharicWordProblems = [
+  { q: "ፋሩክ 5 ፖም አለው፤ ሙርሲ 3 ጨመረለት። ፋሩክ አሁን ስንት ፖም አለው?", a: 8 },
+  { q: "ዛፍ ላይ 10 ወፎች ነበሩ። 4ቱ በረሩ። ስንት ወፎች ቀሩ?", a: 6 },
+  { q: "ቬሮኒካ 2 ሳጥኖች አሏት። እያንዳንዱ ሳጥን ውስጥ 6 እርሳሶች አሉ። በጠቅላላ ስንት እርሳሶች አሉ?", a: 12 },
+  { q: "ሰላምን 15 ብርቱካን ገዝቶ 5ቱን ለጓደኞቹ ሰጠ። ስንት ብርቱካን ቀረው?", a: 10 },
+  { q: "አንድ መኪና 4 ጎማዎች አሉት። 3 መኪናዎች በድምሩ ስንት ጎማዎች አሏቸው?", a: 12 },
+  { q: "በአንድ ክፍል 7 ወንዶች እና 8 ሴቶች አሉ። በክፍሉ ውስጥ በጠቅላላ ስንት ተማሪዎች አሉ?", a: 15 }
+];
+
 
 // --- Sound Functions ---
 function speak(text, lang = "am-ET") {
   if (isMuted) return;
-  speechSynthesis.cancel(); // Stop previous speech
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = lang;
   speechSynthesis.speak(utter);
@@ -222,156 +263,182 @@ function toggleMute() {
   muteBtn.innerText = isMuted ? "Unmute" : "Mute";
   if (isMuted) {
     speechSynthesis.cancel();
+    if(winnerSoundInterval) clearInterval(winnerSoundInterval);
   }
 }
 
-// --- Game Logic ---
+// --- UI & Game Flow Functions ---
+function renderPlayerList() {
+    playerSidebar.innerHTML = '<h2>Players</h2>';
+    players.forEach((player, index) => {
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        if (index === currentPlayerIndex) {
+            card.classList.add('active');
+        }
+        const progress = (player.questionCount / TOTAL_QUESTIONS_PER_PLAYER) * 100;
+        card.innerHTML = `
+            <div class="player-info">
+                <span>${player.name}</span>
+                <span>${player.score}</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: ${progress}%;"></div>
+            </div>
+        `;
+        playerSidebar.appendChild(card);
+    });
+}
+
 function initializeGame() {
-    players.forEach(player => { scores[player] = 0; });
-    playerIndex = 0;
-    correctAnswersCount = 0;
+    if(winnerSoundInterval) clearInterval(winnerSoundInterval);
+    players = playerNames.map(name => ({ name, score: 0, questionCount: 0 }));
+    currentPlayerIndex = 0;
     
-    updateScoreboard();
-    newQuestion();
+    winnerScreen.style.display = 'none';
+    gameWrapper.style.display = 'flex';
     
-    gameContainer.style.display = 'block';
-    gameOverScreen.style.display = 'none';
+    startTurn();
 }
 
-function updateScoreboard() {
-  scoreListEl.innerHTML = "";
-  for (const player in scores) {
-    const li = document.createElement("li");
-    li.innerText = `${player}: ${scores[player]}`;
-    scoreListEl.appendChild(li);
-  }
-  roundDisplayEl.innerText = `${Math.min(correctAnswersCount + 1, MAX_ROUNDS)} / ${MAX_ROUNDS}`;
+function startTurn() {
+    renderPlayerList();
+    const currentPlayer = players[currentPlayerIndex];
+    currentPlayerTurnEl.innerText = `${currentPlayer.name}'s Turn (${currentPlayer.questionCount + 1}/${TOTAL_QUESTIONS_PER_PLAYER})`;
+    generateQuestion();
 }
 
-function newQuestion() {
-  answerEl.value = "";
-  answerEl.focus();
+function generateQuestion() {
+    answerEl.value = "";
+    answerEl.focus();
 
-  const name = players[playerIndex];
-  playerNameEl.innerText = "Your turn, " + name + "!";
-  if (correctAnswersCount === 0 && playerIndex === 0) {
-      speak("እንኳን ደህና መጣህ " + name);
-  }
-  
-  let a, b, result;
-  let questionText = "";
-  let operators = [];
-
-  // --- INCREASING DIFFICULTY ---
-  // Rounds 1-3: Simple Addition/Subtraction
-  if (correctAnswersCount < 3) {
-    a = Math.floor(Math.random() * 10) + 1;
-    b = Math.floor(Math.random() * 10) + 1;
-    operators = ["+", "-"];
-  } 
-  // Rounds 4-6: Harder Add/Sub, Simple Multiplication
-  else if (correctAnswersCount < 6) {
-    a = Math.floor(Math.random() * 25) + 1;
-    b = Math.floor(Math.random() * 25) + 1;
-    operators = ["+", "-", "×"];
-  } 
-  // Rounds 7-10: Complex Add/Sub/Mul, Simple Division
-  else {
-    a = Math.floor(Math.random() * 41) + 10; // 10 to 50
-    b = Math.floor(Math.random() * 41) + 10;
-    operators = ["+", "-", "×", "÷"];
-  }
-
-  const op = operators[Math.floor(Math.random() * operators.length)];
-
-  if (op === "+") {
-    correctAnswer = a + b;
-    questionText = `${a} + ${b}`;
-  } else if (op === "-") {
-    const max = Math.max(a, b);
-    const min = Math.min(a, b);
-    correctAnswer = max - min;
-    questionText = `${max} - ${min}`;
-  } else if (op === "×") {
-    // Make multiplication easier in mid-rounds
-    if (correctAnswersCount < 6) {
-        a = Math.floor(Math.random() * 9) + 2; // 2-10
-        b = Math.floor(Math.random() * 5) + 1; // 1-5
+    const currentPlayer = players[currentPlayerIndex];
+    let questionText = "";
+    
+    // 25% chance of a word problem
+    if (Math.random() < 0.25) {
+        const problem = amharicWordProblems[Math.floor(Math.random() * amharicWordProblems.length)];
+        questionText = problem.q;
+        correctAnswer = problem.a;
     } else {
-        a = Math.floor(Math.random() * 9) + 2; // 2-10
-        b = Math.floor(Math.random() * 9) + 2; // 2-10
-    }
-    correctAnswer = a * b;
-    questionText = `${a} × ${b}`;
-  } else if (op === "÷") {
-    a = Math.floor(Math.random() * 9) + 2; // 2-10
-    b = Math.floor(Math.random() * 9) + 2;
-    result = a * b;
-    correctAnswer = b;
-    questionText = `${result} ÷ ${a}`;
-  }
+        // --- INCREASING DIFFICULTY for number problems ---
+        let a, b, result;
+        const qNum = currentPlayer.questionCount;
 
-  questionEl.innerText = questionText;
-  speak("ጥያቄ: " + questionText.replace('×', 'ሲባዛ').replace('÷', 'ሲካፈል'));
+        if (qNum < 3) { // Easy: Rounds 1-3
+            a = Math.floor(Math.random() * 10) + 1;
+            b = Math.floor(Math.random() * 10) + 1;
+            correctAnswer = a + b; questionText = `${a} + ${b}`;
+        } else if (qNum < 7) { // Medium: Rounds 4-7
+            a = Math.floor(Math.random() * 20) + 5;
+            b = Math.floor(Math.random() * 15) + 1;
+            const op = ["+", "-", "×"][Math.floor(Math.random() * 3)];
+            if (op === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
+            if (op === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
+            if (op === "×") { a = Math.floor(Math.random() * 8) + 2; b = Math.floor(Math.random() * 8) + 2; correctAnswer = a * b; questionText = `${a} × ${b}`; }
+        } else { // Hard: Rounds 8-10
+            a = Math.floor(Math.random() * 50) + 10;
+            b = Math.floor(Math.random() * 50) + 10;
+            const op = ["+", "-", "×", "÷"][Math.floor(Math.random() * 4)];
+            if (op === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
+            if (op === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
+            if (op === "×") { a = Math.floor(Math.random() * 10) + 3; b = Math.floor(Math.random() * 10) + 3; correctAnswer = a * b; questionText = `${a} × ${b}`; }
+            if (op === "÷") { a = Math.floor(Math.random() * 10) + 2; b = Math.floor(Math.random() * 10) + 2; result = a * b; correctAnswer = b; questionText = `${result} ÷ ${a}`; }
+        }
+    }
+    
+    questionEl.innerText = questionText;
+    const speakText = questionText.replace('×', ' ሲባዛ ').replace('÷', ' ሲካፈል ').replace('+', ' ሲደመር ').replace('-', ' ሲቀነስ ');
+    speak("ጥያቄ፥ " + speakText);
 }
 
 function checkAnswer() {
-  // Start music on the first user interaction to comply with browser policies
-  if (backgroundMusic.paused && !isMuted) {
-      backgroundMusic.volume = 0.1; // Soft volume
-      backgroundMusic.play().catch(e => console.log("Autoplay was prevented by the browser."));
-  }
-
-  const userAnswer = parseInt(answerEl.value, 10);
-  if (userAnswer === correctAnswer) {
-    correctAnswersCount++;
-    const currentPlayer = players[playerIndex];
-    scores[currentPlayer]++;
-    
-    const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
-    speak(randomCompliment[0]);
-    alert(randomCompliment[0] + " - " + randomCompliment[1]);
-    
-    createStars();
-    updateScoreboard();
-
-    if (correctAnswersCount >= MAX_ROUNDS) {
-      endGame();
-    } else {
-      playerIndex = (playerIndex + 1) % players.length;
-      setTimeout(newQuestion, 500);
+    if (backgroundMusic.paused && !isMuted) {
+        backgroundMusic.volume = 0.1;
+        backgroundMusic.play().catch(e => console.log("Music autoplay prevented."));
     }
-  } else {
-    speak("ትክክል አይደለም");
-    alert("Not quite, try again!");
-  }
+
+    const userAnswer = parseInt(answerEl.value, 10);
+    const questionBox = document.getElementById('question-box');
+
+    if (userAnswer === correctAnswer) {
+        const currentPlayer = players[currentPlayerIndex];
+        currentPlayer.score++;
+        currentPlayer.questionCount++;
+        
+        const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+        speak(randomCompliment);
+        createStars();
+        
+        if (isGameOver()) {
+            endGame();
+        } else {
+            nextTurn();
+        }
+    } else {
+        speak("ትክክል አይደለም, እንደገና ሞክር");
+        questionBox.classList.add('shake');
+        setTimeout(() => questionBox.classList.remove('shake'), 500);
+    }
+}
+
+function nextTurn() {
+    // Only advance turn if current player has finished their question
+    if (players[currentPlayerIndex].questionCount >= TOTAL_QUESTIONS_PER_PLAYER) {
+        // Find the next player who hasn't finished
+        let nextPlayerFound = false;
+        for(let i = 1; i < players.length; i++) {
+            let nextIndex = (currentPlayerIndex + i) % players.length;
+            if (players[nextIndex].questionCount < TOTAL_QUESTIONS_PER_PLAYER) {
+                currentPlayerIndex = nextIndex;
+                nextPlayerFound = true;
+                break;
+            }
+        }
+    } else {
+         // Move to next player in cycle
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    }
+    startTurn();
+}
+
+function isGameOver() {
+    return players.every(p => p.questionCount >= TOTAL_QUESTIONS_PER_PLAYER);
 }
 
 function endGame() {
     backgroundMusic.pause();
-    speak("ጨዋታው አልቋል! ውጤቱ ይሄንን ይመስላል።");
-
-    // Sort players by score
-    const sortedPlayers = Object.entries(scores).sort(([,a],[,b]) => b-a);
     
-    leaderboardEl.innerHTML = "";
-    const highScore = sortedPlayers[0][1];
-
-    sortedPlayers.forEach(([name, score]) => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span>${name}</span><span>${score} Points</span>`;
-        if (score === highScore && highScore > 0) {
-            li.classList.add("winner");
+    // Find winner(s)
+    let highScore = -1;
+    let winners = [];
+    players.forEach(player => {
+        if (player.score > highScore) {
+            highScore = player.score;
+            winners = [player.name];
+        } else if (player.score === highScore) {
+            winners.push(player.name);
         }
-        leaderboardEl.appendChild(li);
     });
 
-    gameContainer.style.display = 'none';
-    gameOverScreen.style.display = 'block';
-}
+    const winnerText = winners.join(' and ');
+    winnerNameEl.innerText = winnerText;
+    
+    gameWrapper.style.display = 'none';
+    winnerScreen.style.display = 'block';
 
-function restartGame() {
-    initializeGame();
+    const winnerCompliment = `አንተ ሻምፒዮን ነህ! በጣም አስገራሚ ነው! እንኳን ደስ አለህ ${winnerText}!`;
+    speak(winnerCompliment);
+
+    // Call winner name repeatedly for 5 seconds
+    if (!isMuted) {
+        winnerSoundInterval = setInterval(() => {
+            speak(winnerText);
+        }, 1500);
+        setTimeout(() => {
+            clearInterval(winnerSoundInterval);
+        }, 5000);
+    }
 }
 
 function createStars() {
@@ -381,9 +448,9 @@ function createStars() {
     star.innerHTML = "✨";
     star.style.left = `${Math.random() * 100}%`;
     star.style.animationDuration = `${Math.random() * 2 + 3}s`;
-    star.style.animationDelay = `${Math.random() * 2}s`;
-    star.addEventListener('animationend', () => star.remove());
+    star.style.animationDelay = `${Math.random() * 0.5}s`;
     document.body.appendChild(star);
+    star.addEventListener('animationend', () => star.remove());
   }
 }
 
