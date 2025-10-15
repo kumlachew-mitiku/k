@@ -78,6 +78,10 @@
   .player-card.active .progress-bar {
     background-color: white;
   }
+  .player-card.tied {
+      background-color: #f39c12; /* Orange for tied players */
+      color: white;
+  }
 
   /* --- Main Game Area --- */
   .game-container {
@@ -89,6 +93,7 @@
   #current-player-turn {
     font-size: 1.5em;
     font-weight: bold;
+    min-height: 2em; /* To prevent jump */
   }
 
   #question {
@@ -232,13 +237,17 @@ let correctAnswer = 0;
 let isMuted = false;
 let winnerSoundInterval = null;
 const TOTAL_QUESTIONS_PER_PLAYER = 10;
+let isTieBreakerMode = false;
+let tiedPlayers = [];
 
+// --- Compliments & Word Problems (unchanged) ---
 const compliments = [
   "ጎበዝ!", "ልክ ነህ!", "በጣም ጥሩ!", "በትክክል!", "አንተ በጣም ጎበዝ ነህ!",
   "ፈጣን ነህ!", "ኤክሰለንት!", "አንተ ጀግና ነህ!", "ጥሩ አስተሳሰብ ነው!", "ዋው!",
   "አገኘኸው!", "አንተ ኮከብ ነህ!", "ግሩም ነው!"
 ];
 
+// Re-using the Amharic word problems
 const amharicWordProblems = [
   { q: "ፋሩክ 5 ፖም አለው፤ ሙርሲ 3 ጨመረለት። ፋሩክ አሁን ስንት ፖም አለው?", a: 8 },
   { q: "ዛፍ ላይ 10 ወፎች ነበሩ። 4ቱ በረሩ። ስንት ወፎች ቀሩ?", a: 6 },
@@ -248,8 +257,14 @@ const amharicWordProblems = [
   { q: "በአንድ ክፍል 7 ወንዶች እና 8 ሴቶች አሉ። በክፍሉ ውስጥ በጠቅላላ ስንት ተማሪዎች አሉ?", a: 15 }
 ];
 
+// Array to track question history for the current round
+let questionHistory = [];
 
-// --- Sound Functions ---
+// --- Helper Functions ---
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function speak(text, lang = "am-ET") {
   if (isMuted) return;
   const utter = new SpeechSynthesisUtterance(text);
@@ -264,18 +279,34 @@ function toggleMute() {
   if (isMuted) {
     speechSynthesis.cancel();
     if(winnerSoundInterval) clearInterval(winnerSoundInterval);
+    backgroundMusic.pause();
+  } else {
+      if (backgroundMusic.paused) {
+          backgroundMusic.volume = 0.1;
+          backgroundMusic.play().catch(e => console.log("Music play prevented on unmute:", e));
+      }
   }
 }
 
-// --- UI & Game Flow Functions ---
+// --- Game Flow Functions ---
 function renderPlayerList() {
     playerSidebar.innerHTML = '<h2>Players</h2>';
     players.forEach((player, index) => {
         const card = document.createElement('div');
         card.className = 'player-card';
-        if (index === currentPlayerIndex) {
+        
+        // Active and Tied Status
+        const isActive = !isTieBreakerMode && index === currentPlayerIndex;
+        const isCurrentlyTied = isTieBreakerMode && tiedPlayers.includes(player);
+
+        if (isActive) {
             card.classList.add('active');
+        } else if (isCurrentlyTied) {
+            card.classList.add('tied');
+        } else if (player.questionCount >= TOTAL_QUESTIONS_PER_PLAYER && !isTieBreakerMode) {
+            card.style.opacity = '0.5';
         }
+
         const progress = (player.questionCount / TOTAL_QUESTIONS_PER_PLAYER) * 100;
         card.innerHTML = `
             <div class="player-info">
@@ -292,113 +323,219 @@ function renderPlayerList() {
 
 function initializeGame() {
     if(winnerSoundInterval) clearInterval(winnerSoundInterval);
-    players = playerNames.map(name => ({ name, score: 0, questionCount: 0 }));
+    players = playerNames.map(name => ({ name, score: 0, questionCount: 0, tieBreakerCorrect: 0 }));
     currentPlayerIndex = 0;
+    isTieBreakerMode = false;
+    tiedPlayers = [];
+    questionHistory = [];
     
     winnerScreen.style.display = 'none';
     gameWrapper.style.display = 'flex';
+    
+    backgroundMusic.muted = isMuted;
+    backgroundMusic.pause(); 
     
     startTurn();
 }
 
 function startTurn() {
-    renderPlayerList();
-    const currentPlayer = players[currentPlayerIndex];
-    currentPlayerTurnEl.innerText = `${currentPlayer.name}'s Turn (${currentPlayer.questionCount + 1}/${TOTAL_QUESTIONS_PER_PLAYER})`;
-    generateQuestion();
-}
-
-function generateQuestion() {
-    answerEl.value = "";
-    answerEl.focus();
-
-    const currentPlayer = players[currentPlayerIndex];
-    let questionText = "";
+    if (isGameOver()) {
+        checkAndStartTieBreaker();
+        return;
+    }
     
-    // 25% chance of a word problem
-    if (Math.random() < 0.25) {
-        const problem = amharicWordProblems[Math.floor(Math.random() * amharicWordProblems.length)];
-        questionText = problem.q;
-        correctAnswer = problem.a;
-    } else {
-        // --- INCREASING DIFFICULTY for number problems ---
-        let a, b, result;
-        const qNum = currentPlayer.questionCount;
-
-        if (qNum < 3) { // Easy: Rounds 1-3
-            a = Math.floor(Math.random() * 10) + 1;
-            b = Math.floor(Math.random() * 10) + 1;
-            correctAnswer = a + b; questionText = `${a} + ${b}`;
-        } else if (qNum < 7) { // Medium: Rounds 4-7
-            a = Math.floor(Math.random() * 20) + 5;
-            b = Math.floor(Math.random() * 15) + 1;
-            const op = ["+", "-", "×"][Math.floor(Math.random() * 3)];
-            if (op === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
-            if (op === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
-            if (op === "×") { a = Math.floor(Math.random() * 8) + 2; b = Math.floor(Math.random() * 8) + 2; correctAnswer = a * b; questionText = `${a} × ${b}`; }
-        } else { // Hard: Rounds 8-10
-            a = Math.floor(Math.random() * 50) + 10;
-            b = Math.floor(Math.random() * 50) + 10;
-            const op = ["+", "-", "×", "÷"][Math.floor(Math.random() * 4)];
-            if (op === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
-            if (op === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
-            if (op === "×") { a = Math.floor(Math.random() * 10) + 3; b = Math.floor(Math.random() * 10) + 3; correctAnswer = a * b; questionText = `${a} × ${b}`; }
-            if (op === "÷") { a = Math.floor(Math.random() * 10) + 2; b = Math.floor(Math.random() * 10) + 2; result = a * b; correctAnswer = b; questionText = `${result} ÷ ${a}`; }
+    // Skip finished players only in main game mode
+    if (!isTieBreakerMode) {
+        while (players[currentPlayerIndex].questionCount >= TOTAL_QUESTIONS_PER_PLAYER) {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
         }
     }
     
+    renderPlayerList();
+    const currentPlayer = players[currentPlayerIndex];
+    
+    if (isTieBreakerMode) {
+        currentPlayerTurnEl.innerText = `${currentPlayer.name}'s Tie-Breaker Question!`;
+    } else {
+        currentPlayerTurnEl.innerText = `${currentPlayer.name}'s Turn (${currentPlayer.questionCount + 1}/${TOTAL_QUESTIONS_PER_PLAYER})`;
+    }
+    
+    generateQuestion(currentPlayer.questionCount);
+}
+
+/**
+ * Generates a random, non-repetitive math question with increasing difficulty.
+ * @param {number} qNum - The current question number (0 to 9) to determine difficulty.
+ */
+function generateQuestion(qNum) {
+    answerEl.value = "";
+    answerEl.focus();
+
+    let questionText = "";
+    let a, b, result;
+    let difficultyLevel = isTieBreakerMode ? 4 : Math.floor(qNum / (TOTAL_QUESTIONS_PER_PLAYER / 4)) + 1;
+    
+    let isUnique = false;
+    while (!isUnique) {
+        // Default to a hard-coded word problem at the start of a round for variety
+        if (!isTieBreakerMode && qNum === 0 && Math.random() < 0.3) {
+            const problem = amharicWordProblems[getRandomInt(0, amharicWordProblems.length - 1)];
+            questionText = problem.q;
+            correctAnswer = problem.a;
+        } else {
+            switch (difficultyLevel) {
+                case 1: // Easy: Basic Addition/Subtraction (1-10)
+                    a = getRandomInt(1, 10);
+                    b = getRandomInt(1, 10);
+                    if (Math.random() < 0.5) { // Addition
+                        correctAnswer = a + b; questionText = `${a} + ${b}`;
+                    } else { // Subtraction
+                        correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`;
+                    }
+                    break;
+                case 2: // Medium: Mixed Operations (Addition/Subtraction/Simple Multiplication)
+                    a = getRandomInt(10, 30);
+                    b = getRandomInt(5, 20);
+                    const op2 = ["+", "-", "×"][getRandomInt(0, 2)];
+                    if (op2 === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
+                    if (op2 === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
+                    if (op2 === "×") { a = getRandomInt(2, 10); b = getRandomInt(2, 8); correctAnswer = a * b; questionText = `${a} × ${b}`; }
+                    break;
+                case 3: // Hard: Mixed Operations (Larger Numbers, Multiplication, Simple Division)
+                    a = getRandomInt(30, 80);
+                    b = getRandomInt(10, 50);
+                    const op3 = ["+", "-", "×", "÷"][getRandomInt(0, 3)];
+                    if (op3 === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
+                    if (op3 === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
+                    if (op3 === "×") { a = getRandomInt(5, 12); b = getRandomInt(5, 12); correctAnswer = a * b; questionText = `${a} × ${b}`; }
+                    if (op3 === "÷") { a = getRandomInt(2, 10); b = getRandomInt(2, 10); result = a * b; correctAnswer = b; questionText = `${result} ÷ ${a}`; }
+                    break;
+                case 4: // Tie-Breaker/Very Hard: Two-step operations, larger numbers
+                    const a1 = getRandomInt(5, 15);
+                    const b1 = getRandomInt(5, 15);
+                    const c1 = getRandomInt(2, 5);
+                    const opA = ["+", "-"][getRandomInt(0, 1)];
+                    const opB = ["×", "+"][getRandomInt(0, 1)];
+                    
+                    if (opA === "+" && opB === "×") { // e.g. (a + b) x c
+                        correctAnswer = (a1 + b1) * c1;
+                        questionText = `(${a1} + ${b1}) × ${c1}`;
+                    } else if (opA === "-" && opB === "×") { // e.g. (a - b) x c
+                        correctAnswer = (Math.max(a1, b1) - Math.min(a1, b1)) * c1;
+                        questionText = `(${Math.max(a1, b1)} - ${Math.min(a1, b1)}) × ${c1}`;
+                    } else { // e.g. a x b + c
+                        correctAnswer = (a1 * b1) + c1;
+                        questionText = `${a1} × ${b1} + ${c1}`;
+                    }
+                    break;
+            }
+        }
+        
+        // Check if question is already in history (prevents immediate repetition)
+        const newQuestionKey = `${questionText}=${correctAnswer}`;
+        if (!questionHistory.includes(newQuestionKey)) {
+            isUnique = true;
+            questionHistory.push(newQuestionKey);
+            // Limit history size to prevent memory issues (e.g., last 20 questions)
+            if (questionHistory.length > 20) {
+                questionHistory.shift(); 
+            }
+        }
+    }
+
     questionEl.innerText = questionText;
-    const speakText = questionText.replace('×', ' ሲባዛ ').replace('÷', ' ሲካፈል ').replace('+', ' ሲደመር ').replace('-', ' ሲቀነስ ');
+    const speakText = questionText.replace('×', ' ሲባዛ ').replace('÷', ' ሲካፈል ').replace('+', ' ሲደመር ').replace('-', ' ሲቀነስ ').replace('(', '').replace(')', '');
     speak("ጥያቄ፥ " + speakText);
 }
 
 function checkAnswer() {
     if (backgroundMusic.paused && !isMuted) {
         backgroundMusic.volume = 0.1;
-        backgroundMusic.play().catch(e => console.log("Music autoplay prevented."));
+        backgroundMusic.play().catch(e => {
+            console.log("Music autoplay prevented by browser:", e);
+        });
     }
 
     const userAnswer = parseInt(answerEl.value, 10);
     const questionBox = document.getElementById('question-box');
+    const currentPlayer = players[currentPlayerIndex];
+
+    if (isNaN(userAnswer)) {
+        speak("እባክህ ቁጥር አስገባ!");
+        questionBox.classList.add('shake');
+        setTimeout(() => questionBox.classList.remove('shake'), 500);
+        return;
+    }
 
     if (userAnswer === correctAnswer) {
-        const currentPlayer = players[currentPlayerIndex];
-        currentPlayer.score++;
-        currentPlayer.questionCount++;
-        
-        const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+        // Correct Answer Logic
+        const randomCompliment = compliments[getRandomInt(0, compliments.length - 1)];
         speak(randomCompliment);
         createStars();
         
-        if (isGameOver()) {
-            endGame();
+        if (isTieBreakerMode) {
+            currentPlayer.tieBreakerCorrect++;
+            speak(`${currentPlayer.name}, በትክክል መልሰሃል!`);
+            // Immediate check and progression for tie-breaker
+            if (tiedPlayers.length === 1) { // If only one player is left
+                endGame(tiedPlayers[0].name);
+            } else {
+                nextTieBreakerTurn();
+            }
+            return; // Exit here, tie-breaker logic handles the next step
         } else {
-            nextTurn();
+            currentPlayer.score++;
+            currentPlayer.questionCount++;
         }
     } else {
-        speak("ትክክል አይደለም, እንደገና ሞክር");
+        // Wrong Answer Logic (New Requirement)
+        speak("ትክክል አይደለም!");
         questionBox.classList.add('shake');
         setTimeout(() => questionBox.classList.remove('shake'), 500);
+
+        if (isTieBreakerMode) {
+            // Player is eliminated from the tie-breaker round
+            speak(`${currentPlayer.name} ከውድድሩ ወጥተሃል።`);
+            tiedPlayers = tiedPlayers.filter(p => p !== currentPlayer);
+            if (tiedPlayers.length === 1) { // Only one player remains
+                endGame(tiedPlayers[0].name);
+                return;
+            } else if (tiedPlayers.length === 0) { // All eliminated (very rare tie)
+                endGame("No one");
+                return;
+            }
+        } else {
+            currentPlayer.questionCount++; // Still count the question attempt
+        }
     }
+
+    // Normal Game Flow: Pass turn to the next player
+    nextTurn();
 }
 
 function nextTurn() {
-    // Only advance turn if current player has finished their question
-    if (players[currentPlayerIndex].questionCount >= TOTAL_QUESTIONS_PER_PLAYER) {
-        // Find the next player who hasn't finished
-        let nextPlayerFound = false;
-        for(let i = 1; i < players.length; i++) {
-            let nextIndex = (currentPlayerIndex + i) % players.length;
-            if (players[nextIndex].questionCount < TOTAL_QUESTIONS_PER_PLAYER) {
-                currentPlayerIndex = nextIndex;
-                nextPlayerFound = true;
-                break;
+    // Check for game end condition before moving to next player
+    if (isGameOver() && !isTieBreakerMode) {
+        checkAndStartTieBreaker();
+        return;
+    }
+
+    // Move to the next player
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    
+    // Skip players who have finished all their questions (only in main game)
+    if (!isTieBreakerMode) {
+        let originalIndex = currentPlayerIndex;
+        while (players[currentPlayerIndex].questionCount >= TOTAL_QUESTIONS_PER_PLAYER) {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            // If we circled back to the starting point, all players must be finished.
+            if (currentPlayerIndex === originalIndex) {
+                checkAndStartTieBreaker();
+                return;
             }
         }
-    } else {
-         // Move to next player in cycle
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
     }
+    
     startTurn();
 }
 
@@ -406,64 +543,57 @@ function isGameOver() {
     return players.every(p => p.questionCount >= TOTAL_QUESTIONS_PER_PLAYER);
 }
 
-function endGame() {
+// --- Tie Breaker Logic ---
+function checkAndStartTieBreaker() {
+    const scores = players.map(p => p.score);
+    const highScore = Math.max(...scores);
+    
+    tiedPlayers = players.filter(p => p.score === highScore && p.score > 0);
+    
+    if (tiedPlayers.length > 1) {
+        // Start Tie-Breaker Mode
+        isTieBreakerMode = true;
+        // Shuffle the tied players to randomize the turn order
+        // This is a simple shuffle (Fisher-Yates is better but this is sufficient)
+        tiedPlayers.sort(() => Math.random() - 0.5);
+        
+        // Reset player index to the first tied player
+        currentPlayerIndex = players.findIndex(p => p === tiedPlayers[0]);
+        
+        speak(`ውድድሩ በእኩል ነጥብ ተጠናቋል። አሁን የእኩል ነጥብ ሰባሪ ጥያቄዎች ይቀርባሉ! ${tiedPlayers.map(p => p.name).join(', ')} ተዘጋጁ!`);
+        startTurn();
+    } else if (tiedPlayers.length === 1) {
+        // One winner found
+        endGame(tiedPlayers[0].name);
+    } else {
+        // No score or no players left
+        endGame("No one");
+    }
+}
+
+function nextTieBreakerTurn() {
+    // Find the current player's index within the 'players' array
+    const currentIndexInPlayers = players.findIndex(p => p === tiedPlayers[0]);
+    
+    // Cycle the `tiedPlayers` array to make the next player the first element
+    const nextPlayer = tiedPlayers.shift(); 
+    tiedPlayers.push(nextPlayer); 
+    
+    // Update the main index to the new current player
+    currentPlayerIndex = players.findIndex(p => p === tiedPlayers[0]);
+    
+    // Check for winner *after* the turn cycle in case only one is left
+    if (tiedPlayers.length === 1) {
+        endGame(tiedPlayers[0].name);
+    } else {
+        startTurn();
+    }
+}
+
+
+function endGame(winnerName) {
     backgroundMusic.pause();
     
-    // Find winner(s)
-    let highScore = -1;
-    let winners = [];
-    players.forEach(player => {
-        if (player.score > highScore) {
-            highScore = player.score;
-            winners = [player.name];
-        } else if (player.score === highScore) {
-            winners.push(player.name);
-        }
-    });
-
-    const winnerText = winners.join(' and ');
-    winnerNameEl.innerText = winnerText;
-    
-    gameWrapper.style.display = 'none';
-    winnerScreen.style.display = 'block';
-
-    const winnerCompliment = `አንተ ሻምፒዮን ነህ! በጣም አስገራሚ ነው! እንኳን ደስ አለህ ${winnerText}!`;
-    speak(winnerCompliment);
-
-    // Call winner name repeatedly for 5 seconds
-    if (!isMuted) {
-        winnerSoundInterval = setInterval(() => {
-            speak(winnerText);
-        }, 1500);
-        setTimeout(() => {
-            clearInterval(winnerSoundInterval);
-        }, 5000);
-    }
-}
-
-function createStars() {
-  for (let i = 0; i < 20; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-    star.innerHTML = "✨";
-    star.style.left = `${Math.random() * 100}%`;
-    star.style.animationDuration = `${Math.random() * 2 + 3}s`;
-    star.style.animationDelay = `${Math.random() * 0.5}s`;
-    document.body.appendChild(star);
-    star.addEventListener('animationend', () => star.remove());
-  }
-}
-
-// --- Initial Game Start ---
-initializeGame();
-
-// Allow submitting with the Enter key
-answerEl.addEventListener("keyup", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        checkAnswer();
-    }
-});
-</script>
-</body>
-</html>
+    const winnerMessage = winnerName !== "No one"
+        ? `አንተ ሻምፒዮን ነህ! በጣም አስገራሚ ነው! እንኳን ደስ አለህ ${winnerName}!`
+        : "ጨዋታው ተጠናቋል። ለሚቀጥለው ጊዜ መልካም
