@@ -3,62 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kids Math Game - Faruk, Mursi, Veronica, Selamn, Hafiz</title>
+<title>Kids Math Game - 10 Rounds of Fun!</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
   body {
-    background: linear-gradient(to right, #f9f9f9, #e3f2fd);
-    font-family: "Comic Sans MS", sans-serif;
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    font-family: 'Roboto', "Comic Sans MS", sans-serif;
     text-align: center;
     padding: 20px;
-    overflow: hidden; /* Hide overflow to prevent scrollbars from stars */
+    overflow: hidden;
+    color: #333;
   }
-  h1 {
-    color: #2c3e50;
-  }
-  .game-container {
+
+  /* --- Main Game and Game Over Containers --- */
+  .game-container, #game-over-screen {
     max-width: 500px;
-    margin: 0 auto;
-  }
-  .question-box {
-    background: white;
-    padding: 20px;
     margin: 20px auto;
-    border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 25px;
+    border-radius: 25px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
   }
+
+  #game-over-screen {
+    display: none; /* Hidden by default */
+  }
+
+  h1, h2 {
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  #question {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #3498db;
+    margin: 20px 0;
+  }
+
+  input[type="number"] {
+    width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+
   button {
-    background-color: #4CAF50;
+    background-color: #2ecc71;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 25px;
     border-radius: 10px;
-    font-size: 16px;
-    margin-top: 10px;
+    font-size: 18px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
   }
   button:hover {
-    background-color: #45a049;
+    background-color: #27ae60;
+    transform: scale(1.05);
   }
+  
   #muteBtn {
-    background-color: #f44336;
+    background-color: #e74c3c;
     position: fixed;
     top: 15px;
     right: 15px;
     padding: 8px 12px;
   }
   #muteBtn:hover {
-    background-color: #d32f2f;
+    background-color: #c0392b;
   }
-  #scoreboard {
-    background: #ffffff;
-    padding: 10px 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  /* --- Scoreboard and Round Counter --- */
+  #status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
   }
-  #scoreboard h2 {
-    margin: 0 0 10px 0;
+  #scoreboard h2, #round-counter h2 {
+    margin: 0;
+    font-size: 1.2em;
     color: #34495e;
   }
   #score-list {
@@ -66,41 +97,67 @@
     padding: 0;
     margin: 0;
     display: flex;
-    justify-content: space-around;
+    gap: 15px;
     font-size: 1.1em;
+  }
+  #round-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #e67e22;
+  }
+
+  /* --- Leaderboard Styling --- */
+  #leaderboard {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+  }
+  #leaderboard li {
+    background: #ecf0f1;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-between;
+  }
+  #leaderboard li.winner {
+    background: #f1c40f;
+    color: #333;
+    font-weight: bold;
+  }
+  .winner::after {
+    content: ' 🏆';
   }
 
   /* --- Star Animation --- */
   .star {
-    position: absolute;
-    top: -20px; /* Start above the screen */
-    color: gold;
-    font-size: 24px;
-    animation: fall linear;
-    pointer-events: none; /* Make stars unclickable */
+    position: absolute; top: -20px; color: gold; font-size: 24px;
+    animation: fall linear; pointer-events: none;
   }
-
   @keyframes fall {
-    to {
-      transform: translateY(100vh);
-      opacity: 0;
-    }
+    to { transform: translateY(100vh); opacity: 0; }
   }
-
 </style>
 </head>
 <body>
 
-<audio id="background-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
+<audio id="background-music" src="abdu-kiyar-bye-bye.mp3" loop></audio>
 
-<div class="game-container">
-  <button id="muteBtn" onclick="toggleMute()">Mute</button>
+<button id="muteBtn" onclick="toggleMute()">Mute</button>
 
-  <h1>Welcome to the Math Game</h1>
+<div class="game-container" id="game-container">
+  <h1>Math Game Challenge</h1>
   
-  <div id="scoreboard">
-    <h2>Scores</h2>
-    <ul id="score-list"></ul>
+  <div id="status-bar">
+    <div id="scoreboard">
+      <h2>Scores</h2>
+      <ul id="score-list"></ul>
+    </div>
+    <div id="round-counter">
+      <h2>Round</h2>
+      <div id="round-display">1 / 10</div>
+    </div>
   </div>
 
   <h2 id="playerName"></h2>
@@ -112,48 +169,48 @@
   </div>
 </div>
 
+<div id="game-over-screen">
+  <h1>Game Over!</h1>
+  <h2>Final Leaderboard</h2>
+  <ul id="leaderboard"></ul>
+  <button onclick="restartGame()">Play Again</button>
+</div>
+
+
 <script>
 // --- DOM Elements ---
+const gameContainer = document.getElementById('game-container');
+const gameOverScreen = document.getElementById('game-over-screen');
 const playerNameEl = document.getElementById("playerName");
 const questionEl = document.getElementById("question");
 const answerEl = document.getElementById("answer");
 const scoreListEl = document.getElementById("score-list");
+const leaderboardEl = document.getElementById('leaderboard');
+const roundDisplayEl = document.getElementById('round-display');
 const muteBtn = document.getElementById("muteBtn");
 const backgroundMusic = document.getElementById("background-music");
 
-
 // --- Game State ---
 const players = ["Faruk", "Mursi", "Veronica", "Selamn", "Hafiz"];
+const scores = {};
+const MAX_ROUNDS = 10;
+
 let playerIndex = 0;
 let correctAnswer = 0;
 let isMuted = false;
-
-// Initialize scores for each player
-const scores = {};
-players.forEach(player => {
-  scores[player] = 0;
-});
+let correctAnswersCount = 0;
 
 const compliments = [
-  ["ጎበዝ!", "Clever!"],
-  ["ልክ ነህ!", "You are correct!"],
-  ["በጣም ጥሩ!", "Very good!"],
-  ["በትክክል!", "Exactly!"],
-  ["አንተ በጣም ጎበዝ ነህ!", "You are so smart!"],
-  ["ፈጣን ነህ!", "You have an excellent brain!"],
-  ["ኤክሰለንት!", "What a clever answer!"],
-  ["አንተ ጀግና ነህ!", "You are a hero!"],
-  ["ጥሩ አስተሳሰብ ነው!", "Great thinking!"],
-  ["ዋው!", "Wow!"],
-  ["አገኘኸው!", "You got it!"],
-  ["አንተ ኮከብ ነህ!", "You are a star!"],
-  ["ግሩም ነው!", "Fantastic!"]
+  ["ጎበዝ!", "Clever!"], ["ልክ ነህ!", "You are correct!"], ["በጣም ጥሩ!", "Very good!"],
+  ["በትክክል!", "Exactly!"], ["አንተ በጣም ጎበዝ ነህ!", "You are so smart!"],
+  ["ፈጣን ነህ!", "Excellent!"], ["አንተ ጀግና ነህ!", "You are a hero!"],
+  ["ዋው!", "Wow!"], ["አገኘኸው!", "You got it!"], ["አንተ ኮከብ ነህ!", "You are a star!"]
 ];
-
 
 // --- Sound Functions ---
 function speak(text, lang = "am-ET") {
-  if (isMuted) return; // Don't speak if muted
+  if (isMuted) return;
+  speechSynthesis.cancel(); // Stop previous speech
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = lang;
   speechSynthesis.speak(utter);
@@ -163,22 +220,32 @@ function toggleMute() {
   isMuted = !isMuted;
   backgroundMusic.muted = isMuted;
   muteBtn.innerText = isMuted ? "Unmute" : "Mute";
-  
-  // If muting, stop any currently speaking text
   if (isMuted) {
     speechSynthesis.cancel();
   }
 }
 
-
 // --- Game Logic ---
+function initializeGame() {
+    players.forEach(player => { scores[player] = 0; });
+    playerIndex = 0;
+    correctAnswersCount = 0;
+    
+    updateScoreboard();
+    newQuestion();
+    
+    gameContainer.style.display = 'block';
+    gameOverScreen.style.display = 'none';
+}
+
 function updateScoreboard() {
-  scoreListEl.innerHTML = ""; // Clear existing scores
+  scoreListEl.innerHTML = "";
   for (const player in scores) {
     const li = document.createElement("li");
     li.innerText = `${player}: ${scores[player]}`;
     scoreListEl.appendChild(li);
   }
+  roundDisplayEl.innerText = `${Math.min(correctAnswersCount + 1, MAX_ROUNDS)} / ${MAX_ROUNDS}`;
 }
 
 function newQuestion() {
@@ -187,102 +254,149 @@ function newQuestion() {
 
   const name = players[playerIndex];
   playerNameEl.innerText = "Your turn, " + name + "!";
-  speak("እንኳን ደህና መጣህ " + name);
+  if (correctAnswersCount === 0 && playerIndex === 0) {
+      speak("እንኳን ደህና መጣህ " + name);
+  }
+  
+  let a, b, result;
+  let questionText = "";
+  let operators = [];
 
-  const a = Math.floor(Math.random() * 10) + 1;
-  const b = Math.floor(Math.random() * 10) + 1;
-  const operators = ["+", "-", "×", "÷"];
+  // --- INCREASING DIFFICULTY ---
+  // Rounds 1-3: Simple Addition/Subtraction
+  if (correctAnswersCount < 3) {
+    a = Math.floor(Math.random() * 10) + 1;
+    b = Math.floor(Math.random() * 10) + 1;
+    operators = ["+", "-"];
+  } 
+  // Rounds 4-6: Harder Add/Sub, Simple Multiplication
+  else if (correctAnswersCount < 6) {
+    a = Math.floor(Math.random() * 25) + 1;
+    b = Math.floor(Math.random() * 25) + 1;
+    operators = ["+", "-", "×"];
+  } 
+  // Rounds 7-10: Complex Add/Sub/Mul, Simple Division
+  else {
+    a = Math.floor(Math.random() * 41) + 10; // 10 to 50
+    b = Math.floor(Math.random() * 41) + 10;
+    operators = ["+", "-", "×", "÷"];
+  }
+
   const op = operators[Math.floor(Math.random() * operators.length)];
 
-  let questionText = "";
   if (op === "+") {
     correctAnswer = a + b;
     questionText = `${a} + ${b}`;
   } else if (op === "-") {
-    // Ensure the result is not negative for simplicity
     const max = Math.max(a, b);
     const min = Math.min(a, b);
     correctAnswer = max - min;
     questionText = `${max} - ${min}`;
   } else if (op === "×") {
+    // Make multiplication easier in mid-rounds
+    if (correctAnswersCount < 6) {
+        a = Math.floor(Math.random() * 9) + 2; // 2-10
+        b = Math.floor(Math.random() * 5) + 1; // 1-5
+    } else {
+        a = Math.floor(Math.random() * 9) + 2; // 2-10
+        b = Math.floor(Math.random() * 9) + 2; // 2-10
+    }
     correctAnswer = a * b;
     questionText = `${a} × ${b}`;
   } else if (op === "÷") {
-    const dividend = a * b;
+    a = Math.floor(Math.random() * 9) + 2; // 2-10
+    b = Math.floor(Math.random() * 9) + 2;
+    result = a * b;
     correctAnswer = b;
-    questionText = `${dividend} ÷ ${a}`;
+    questionText = `${result} ÷ ${a}`;
   }
 
   questionEl.innerText = questionText;
-  speak("ጥያቄ " + questionText.replace('×', 'ሲባዛ').replace('÷', 'ሲካፈል'));
+  speak("ጥያቄ: " + questionText.replace('×', 'ሲባዛ').replace('÷', 'ሲካፈል'));
 }
 
 function checkAnswer() {
-  // Start music on the first user interaction
-  if (backgroundMusic.paused) {
-      backgroundMusic.volume = 0.1; // Set soft volume
+  // Start music on the first user interaction to comply with browser policies
+  if (backgroundMusic.paused && !isMuted) {
+      backgroundMusic.volume = 0.1; // Soft volume
       backgroundMusic.play().catch(e => console.log("Autoplay was prevented by the browser."));
   }
 
-  const userAnswer = parseInt(answerEl.value);
+  const userAnswer = parseInt(answerEl.value, 10);
   if (userAnswer === correctAnswer) {
-    // Update score for the current player
+    correctAnswersCount++;
     const currentPlayer = players[playerIndex];
     scores[currentPlayer]++;
-    updateScoreboard();
     
-    // Show compliment and play sound
     const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
-    alert(randomCompliment[0] + " - " + randomCompliment[1]);
     speak(randomCompliment[0]);
+    alert(randomCompliment[0] + " - " + randomCompliment[1]);
     
-    // Trigger star animation
     createStars();
-    
-    // Move to the next player
-    playerIndex = (playerIndex + 1) % players.length;
-    
-    // Ask the next question after a short delay
-    setTimeout(newQuestion, 500);
+    updateScoreboard();
+
+    if (correctAnswersCount >= MAX_ROUNDS) {
+      endGame();
+    } else {
+      playerIndex = (playerIndex + 1) % players.length;
+      setTimeout(newQuestion, 500);
+    }
   } else {
-    alert("ትክክል አይደለም, try again!");
     speak("ትክክል አይደለም");
+    alert("Not quite, try again!");
   }
 }
 
-// Function to create falling stars animation
+function endGame() {
+    backgroundMusic.pause();
+    speak("ጨዋታው አልቋል! ውጤቱ ይሄንን ይመስላል።");
+
+    // Sort players by score
+    const sortedPlayers = Object.entries(scores).sort(([,a],[,b]) => b-a);
+    
+    leaderboardEl.innerHTML = "";
+    const highScore = sortedPlayers[0][1];
+
+    sortedPlayers.forEach(([name, score]) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${name}</span><span>${score} Points</span>`;
+        if (score === highScore && highScore > 0) {
+            li.classList.add("winner");
+        }
+        leaderboardEl.appendChild(li);
+    });
+
+    gameContainer.style.display = 'none';
+    gameOverScreen.style.display = 'block';
+}
+
+function restartGame() {
+    initializeGame();
+}
+
 function createStars() {
-  const starCount = 20;
-  for (let i = 0; i < starCount; i++) {
+  for (let i = 0; i < 20; i++) {
     const star = document.createElement("div");
     star.className = "star";
-    star.innerHTML = "✨"; // You can use '★' or other characters
-    star.style.left = `${Math.random() * 100}%`; // Random horizontal position
-    star.style.animationDuration = `${Math.random() * 2 + 3}s`; // Random duration (3-5s)
-    star.style.animationDelay = `${Math.random() * 2}s`; // Random start delay
-    star.style.fontSize = `${Math.random() * 15 + 10}px`; // Random size
-    
-    // Remove the star from the DOM after animation ends to save memory
-    star.addEventListener('animationend', () => {
-      star.remove();
-    });
-    
+    star.innerHTML = "✨";
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.animationDuration = `${Math.random() * 2 + 3}s`;
+    star.style.animationDelay = `${Math.random() * 2}s`;
+    star.addEventListener('animationend', () => star.remove());
     document.body.appendChild(star);
   }
 }
 
 // --- Initial Game Start ---
-updateScoreboard();
-newQuestion();
+initializeGame();
 
 // Allow submitting with the Enter key
 answerEl.addEventListener("keyup", function(event) {
     if (event.key === "Enter") {
         event.preventDefault();
-        document.querySelector("button").click(); // Trigger the submit button click
+        checkAnswer();
     }
 });
-
 </script>
 </body>
 </html>
