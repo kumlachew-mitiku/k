@@ -1,599 +1,102 @@
 <!DOCTYPE html>
 <html lang="am">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultimate Kids Math Challenge!</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
-
-  :root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --wrong-color: #e74c3c;
-    --light-bg: #ecf0f1;
-    --dark-text: #2c3e50;
-  }
-
-  body {
-    background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
-    font-family: 'Nunito', sans-serif;
-    padding: 20px;
-    overflow: hidden;
-    color: var(--dark-text);
-  }
-
-  .game-wrapper {
-    display: flex;
-    max-width: 900px;
-    margin: 20px auto;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 25px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
-
-  /* --- Player Sidebar --- */
-  .player-sidebar {
-    width: 250px;
-    padding: 20px;
-    border-right: 2px solid var(--light-bg);
-  }
-  .player-sidebar h2 {
-    text-align: center;
-    margin-top: 0;
-  }
-  .player-card {
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-  }
-  .player-card.active {
-    background-color: var(--primary-color);
-    color: white;
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.5);
-  }
-  .player-info {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 1.1em;
-  }
-  .progress-bar-container {
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    height: 10px;
-    margin-top: 5px;
-    overflow: hidden;
-  }
-  .progress-bar {
-    width: 0%;
-    height: 100%;
-    background-color: var(--secondary-color);
-    transition: width 0.5s ease-in-out;
-  }
-  .player-card.active .progress-bar {
-    background-color: white;
-  }
-  .player-card.tied {
-      background-color: #f39c12; /* Orange for tied players */
-      color: white;
-  }
-
-  /* --- Main Game Area --- */
-  .game-container {
-    flex-grow: 1;
-    padding: 20px 40px;
-    text-align: center;
-  }
-
-  #current-player-turn {
-    font-size: 1.5em;
-    font-weight: bold;
-    min-height: 2em; /* To prevent jump */
-  }
-
-  #question {
-    font-size: 2.2em;
-    min-height: 100px;
-    margin: 20px 0;
-    color: var(--primary-color);
-    font-weight: 700;
-  }
-
-  input[type="number"] {
-    width: 50%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #ddd;
-    text-align: center;
-    font-size: 1.5em;
-    margin-bottom: 15px;
-  }
-  
-  button {
-    background-color: var(--secondary-color);
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-  button:hover {
-    background-color: #27ae60;
-    transform: scale(1.05);
-  }
-  #muteBtn {
-    background-color: var(--wrong-color); position: fixed;
-    top: 15px; right: 15px; z-index: 100;
-  }
-
-  /* --- Winner Screen --- */
-  #winner-screen {
-    display: none; /* Hidden by default */
-    text-align: center;
-    padding: 40px;
-  }
-  #winner-name {
-    font-size: 3em;
-    color: #f1c40f;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-  }
-  #dancing-char {
-    width: 250px;
-    height: 250px;
-    margin: 20px auto;
-  }
-
-  /* --- Animations --- */
-  .star {
-    position: absolute; top: -20px; color: gold; font-size: 24px;
-    animation: fall 3s linear; pointer-events: none;
-  }
-  @keyframes fall {
-    to { transform: translateY(100vh); opacity: 0; }
-  }
-  .shake {
-    animation: shake 0.5s;
-  }
-  @keyframes shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
-  }
-
-  @media (max-width: 768px) {
-    .game-wrapper {
-        flex-direction: column;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amharic Text-to-Speech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
     }
-    .player-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 2px solid var(--light-bg);
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      animation: spin 1s linear infinite;
     }
-    .player-card {
-        width: 120px;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-  }
-
-</style>
+  </style>
 </head>
-<body>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
 
-<audio id="background-music" src="abdu-kiyar-bye-bye.mp3" loop></audio>
-
-<button id="muteBtn" onclick="toggleMute()">Mute</button>
-
-<div class="game-wrapper">
-  <div class="player-sidebar" id="player-sidebar">
-    <h2>Players</h2>
-  </div>
-
-  <div class="game-container" id="game-container">
-    <h1 id="current-player-turn"></h1>
-    <div id="question-box">
-      <h3 id="question"></h3>
-      <input type="number" id="answer" placeholder="መልስህን እዚህ አስገባ">
-      <br>
-      <button onclick="checkAnswer()">Submit</button>
+  <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 space-y-6">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Amharic Text-to-Speech</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">Type Amharic text and click "Speak".</p>
     </div>
+
+    <textarea id="text-input" rows="5" class="w-full p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500" placeholder="እባክዎ የአማርኛ ጽሑፍ ያስገቡ...">ሰላም! እንዴት ነዎት?</textarea>
+
+    <div class="flex flex-col sm:flex-row items-center gap-4 justify-center">
+      <button id="speak-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition w-full sm:w-auto">
+        Speak
+      </button>
+      <div id="loader" class="loader hidden"></div>
+    </div>
+
+    <div id="error" class="hidden text-center text-red-600 font-medium"></div>
+
+    <audio id="audio-player" class="w-full mt-4 hidden" controls></audio>
   </div>
 
-  <div id="winner-screen">
-    <h1>🏆 ሻምፒዮን! 🏆</h1>
-    <img id="dancing-char" src="https://media.tenor.com/a2sP52-0i7EAAAAi/minions-dance.gif" alt="Dancing Character">
-    <h2 id="winner-name"></h2>
-    <button onclick="initializeGame()">Play Again</button>
-  </div>
-</div>
+  <script>
+    const speakBtn = document.getElementById('speak-btn');
+    const loader = document.getElementById('loader');
+    const textInput = document.getElementById('text-input');
+    const errorDiv = document.getElementById('error');
+    const audioPlayer = document.getElementById('audio-player');
 
-<script>
-// --- DOM Elements ---
-const gameWrapper = document.querySelector('.game-wrapper');
-const gameContainer = document.getElementById('game-container');
-const winnerScreen = document.getElementById('winner-screen');
-const playerSidebar = document.getElementById('player-sidebar');
-const currentPlayerTurnEl = document.getElementById('current-player-turn');
-const questionEl = document.getElementById('question');
-const answerEl = document.getElementById('answer');
-const winnerNameEl = document.getElementById('winner-name');
-const muteBtn = document.getElementById('muteBtn');
-const backgroundMusic = document.getElementById('background-music');
+    function showLoading(isLoading) {
+      loader.classList.toggle('hidden', !isLoading);
+      speakBtn.disabled = isLoading;
+    }
 
-// --- Game State & Config ---
-const playerNames = ["Faruk", "Mursi", "Veronica", "Selamn", "Hafiz"];
-let players = [];
-let currentPlayerIndex = 0;
-let correctAnswer = 0;
-let isMuted = false;
-let winnerSoundInterval = null;
-const TOTAL_QUESTIONS_PER_PLAYER = 10;
-let isTieBreakerMode = false;
-let tiedPlayers = [];
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.classList.remove('hidden');
+    }
 
-// --- Compliments & Word Problems (unchanged) ---
-const compliments = [
-  "ጎበዝ!", "ልክ ነህ!", "በጣም ጥሩ!", "በትክክል!", "አንተ በጣም ጎበዝ ነህ!",
-  "ፈጣን ነህ!", "ኤክሰለንት!", "አንተ ጀግና ነህ!", "ጥሩ አስተሳሰብ ነው!", "ዋው!",
-  "አገኘኸው!", "አንተ ኮከብ ነህ!", "ግሩም ነው!"
-];
+    function hideError() {
+      errorDiv.classList.add('hidden');
+    }
 
-// Re-using the Amharic word problems
-const amharicWordProblems = [
-  { q: "ፋሩክ 5 ፖም አለው፤ ሙርሲ 3 ጨመረለት። ፋሩክ አሁን ስንት ፖም አለው?", a: 8 },
-  { q: "ዛፍ ላይ 10 ወፎች ነበሩ። 4ቱ በረሩ። ስንት ወፎች ቀሩ?", a: 6 },
-  { q: "ቬሮኒካ 2 ሳጥኖች አሏት። እያንዳንዱ ሳጥን ውስጥ 6 እርሳሶች አሉ። በጠቅላላ ስንት እርሳሶች አሉ?", a: 12 },
-  { q: "ሰላምን 15 ብርቱካን ገዝቶ 5ቱን ለጓደኞቹ ሰጠ። ስንት ብርቱካን ቀረው?", a: 10 },
-  { q: "አንድ መኪና 4 ጎማዎች አሉት። 3 መኪናዎች በድምሩ ስንት ጎማዎች አሏቸው?", a: 12 },
-  { q: "በአንድ ክፍል 7 ወንዶች እና 8 ሴቶች አሉ። በክፍሉ ውስጥ በጠቅላላ ስንት ተማሪዎች አሉ?", a: 15 }
-];
+    // Offline fallback: Browser SpeechSynthesis
+    function speakOffline(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'am-ET';
+      speechSynthesis.speak(utterance);
+    }
 
-// Array to track question history for the current round
-let questionHistory = [];
-
-// --- Helper Functions ---
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function speak(text, lang = "am-ET") {
-  if (isMuted) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = lang;
-  speechSynthesis.speak(utter);
-}
-
-function toggleMute() {
-  isMuted = !isMuted;
-  backgroundMusic.muted = isMuted;
-  muteBtn.innerText = isMuted ? "Unmute" : "Mute";
-  if (isMuted) {
-    speechSynthesis.cancel();
-    if(winnerSoundInterval) clearInterval(winnerSoundInterval);
-    backgroundMusic.pause();
-  } else {
-      if (backgroundMusic.paused) {
-          backgroundMusic.volume = 0.1;
-          backgroundMusic.play().catch(e => console.log("Music play prevented on unmute:", e));
+    async function speakText() {
+      const text = textInput.value.trim();
+      if (!text) {
+        showError('Please enter some Amharic text.');
+        return;
       }
-  }
-}
 
-// --- Game Flow Functions ---
-function renderPlayerList() {
-    playerSidebar.innerHTML = '<h2>Players</h2>';
-    players.forEach((player, index) => {
-        const card = document.createElement('div');
-        card.className = 'player-card';
-        
-        // Active and Tied Status
-        const isActive = !isTieBreakerMode && index === currentPlayerIndex;
-        const isCurrentlyTied = isTieBreakerMode && tiedPlayers.includes(player);
+      hideError();
+      showLoading(true);
 
-        if (isActive) {
-            card.classList.add('active');
-        } else if (isCurrentlyTied) {
-            card.classList.add('tied');
-        } else if (player.questionCount >= TOTAL_QUESTIONS_PER_PLAYER && !isTieBreakerMode) {
-            card.style.opacity = '0.5';
-        }
-
-        const progress = (player.questionCount / TOTAL_QUESTIONS_PER_PLAYER) * 100;
-        card.innerHTML = `
-            <div class="player-info">
-                <span>${player.name}</span>
-                <span>${player.score}</span>
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar" style="width: ${progress}%;"></div>
-            </div>
-        `;
-        playerSidebar.appendChild(card);
-    });
-}
-
-function initializeGame() {
-    if(winnerSoundInterval) clearInterval(winnerSoundInterval);
-    players = playerNames.map(name => ({ name, score: 0, questionCount: 0, tieBreakerCorrect: 0 }));
-    currentPlayerIndex = 0;
-    isTieBreakerMode = false;
-    tiedPlayers = [];
-    questionHistory = [];
-    
-    winnerScreen.style.display = 'none';
-    gameWrapper.style.display = 'flex';
-    
-    backgroundMusic.muted = isMuted;
-    backgroundMusic.pause(); 
-    
-    startTurn();
-}
-
-function startTurn() {
-    if (isGameOver()) {
-        checkAndStartTieBreaker();
-        return;
-    }
-    
-    // Skip finished players only in main game mode
-    if (!isTieBreakerMode) {
-        while (players[currentPlayerIndex].questionCount >= TOTAL_QUESTIONS_PER_PLAYER) {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-        }
-    }
-    
-    renderPlayerList();
-    const currentPlayer = players[currentPlayerIndex];
-    
-    if (isTieBreakerMode) {
-        currentPlayerTurnEl.innerText = `${currentPlayer.name}'s Tie-Breaker Question!`;
-    } else {
-        currentPlayerTurnEl.innerText = `${currentPlayer.name}'s Turn (${currentPlayer.questionCount + 1}/${TOTAL_QUESTIONS_PER_PLAYER})`;
-    }
-    
-    generateQuestion(currentPlayer.questionCount);
-}
-
-/**
- * Generates a random, non-repetitive math question with increasing difficulty.
- * @param {number} qNum - The current question number (0 to 9) to determine difficulty.
- */
-function generateQuestion(qNum) {
-    answerEl.value = "";
-    answerEl.focus();
-
-    let questionText = "";
-    let a, b, result;
-    let difficultyLevel = isTieBreakerMode ? 4 : Math.floor(qNum / (TOTAL_QUESTIONS_PER_PLAYER / 4)) + 1;
-    
-    let isUnique = false;
-    while (!isUnique) {
-        // Default to a hard-coded word problem at the start of a round for variety
-        if (!isTieBreakerMode && qNum === 0 && Math.random() < 0.3) {
-            const problem = amharicWordProblems[getRandomInt(0, amharicWordProblems.length - 1)];
-            questionText = problem.q;
-            correctAnswer = problem.a;
-        } else {
-            switch (difficultyLevel) {
-                case 1: // Easy: Basic Addition/Subtraction (1-10)
-                    a = getRandomInt(1, 10);
-                    b = getRandomInt(1, 10);
-                    if (Math.random() < 0.5) { // Addition
-                        correctAnswer = a + b; questionText = `${a} + ${b}`;
-                    } else { // Subtraction
-                        correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`;
-                    }
-                    break;
-                case 2: // Medium: Mixed Operations (Addition/Subtraction/Simple Multiplication)
-                    a = getRandomInt(10, 30);
-                    b = getRandomInt(5, 20);
-                    const op2 = ["+", "-", "×"][getRandomInt(0, 2)];
-                    if (op2 === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
-                    if (op2 === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
-                    if (op2 === "×") { a = getRandomInt(2, 10); b = getRandomInt(2, 8); correctAnswer = a * b; questionText = `${a} × ${b}`; }
-                    break;
-                case 3: // Hard: Mixed Operations (Larger Numbers, Multiplication, Simple Division)
-                    a = getRandomInt(30, 80);
-                    b = getRandomInt(10, 50);
-                    const op3 = ["+", "-", "×", "÷"][getRandomInt(0, 3)];
-                    if (op3 === "+") { correctAnswer = a + b; questionText = `${a} + ${b}`; }
-                    if (op3 === "-") { correctAnswer = Math.max(a, b) - Math.min(a, b); questionText = `${Math.max(a, b)} - ${Math.min(a, b)}`; }
-                    if (op3 === "×") { a = getRandomInt(5, 12); b = getRandomInt(5, 12); correctAnswer = a * b; questionText = `${a} × ${b}`; }
-                    if (op3 === "÷") { a = getRandomInt(2, 10); b = getRandomInt(2, 10); result = a * b; correctAnswer = b; questionText = `${result} ÷ ${a}`; }
-                    break;
-                case 4: // Tie-Breaker/Very Hard: Two-step operations, larger numbers
-                    const a1 = getRandomInt(5, 15);
-                    const b1 = getRandomInt(5, 15);
-                    const c1 = getRandomInt(2, 5);
-                    const opA = ["+", "-"][getRandomInt(0, 1)];
-                    const opB = ["×", "+"][getRandomInt(0, 1)];
-                    
-                    if (opA === "+" && opB === "×") { // e.g. (a + b) x c
-                        correctAnswer = (a1 + b1) * c1;
-                        questionText = `(${a1} + ${b1}) × ${c1}`;
-                    } else if (opA === "-" && opB === "×") { // e.g. (a - b) x c
-                        correctAnswer = (Math.max(a1, b1) - Math.min(a1, b1)) * c1;
-                        questionText = `(${Math.max(a1, b1)} - ${Math.min(a1, b1)}) × ${c1}`;
-                    } else { // e.g. a x b + c
-                        correctAnswer = (a1 * b1) + c1;
-                        questionText = `${a1} × ${b1} + ${c1}`;
-                    }
-                    break;
-            }
-        }
-        
-        // Check if question is already in history (prevents immediate repetition)
-        const newQuestionKey = `${questionText}=${correctAnswer}`;
-        if (!questionHistory.includes(newQuestionKey)) {
-            isUnique = true;
-            questionHistory.push(newQuestionKey);
-            // Limit history size to prevent memory issues (e.g., last 20 questions)
-            if (questionHistory.length > 20) {
-                questionHistory.shift(); 
-            }
-        }
+      try {
+        // NOTE: GitHub Pages cannot call external APIs securely.
+        // So we use offline browser speech for demo use.
+        // If you later connect to Gemini API, replace this section.
+        speakOffline(text);
+      } catch (err) {
+        showError('Speech failed: ' + err.message);
+      } finally {
+        showLoading(false);
+      }
     }
 
-    questionEl.innerText = questionText;
-    const speakText = questionText.replace('×', ' ሲባዛ ').replace('÷', ' ሲካፈል ').replace('+', ' ሲደመር ').replace('-', ' ሲቀነስ ').replace('(', '').replace(')', '');
-    speak("ጥያቄ፥ " + speakText);
-}
-
-function checkAnswer() {
-    if (backgroundMusic.paused && !isMuted) {
-        backgroundMusic.volume = 0.1;
-        backgroundMusic.play().catch(e => {
-            console.log("Music autoplay prevented by browser:", e);
-        });
-    }
-
-    const userAnswer = parseInt(answerEl.value, 10);
-    const questionBox = document.getElementById('question-box');
-    const currentPlayer = players[currentPlayerIndex];
-
-    if (isNaN(userAnswer)) {
-        speak("እባክህ ቁጥር አስገባ!");
-        questionBox.classList.add('shake');
-        setTimeout(() => questionBox.classList.remove('shake'), 500);
-        return;
-    }
-
-    if (userAnswer === correctAnswer) {
-        // Correct Answer Logic
-        const randomCompliment = compliments[getRandomInt(0, compliments.length - 1)];
-        speak(randomCompliment);
-        createStars();
-        
-        if (isTieBreakerMode) {
-            currentPlayer.tieBreakerCorrect++;
-            speak(`${currentPlayer.name}, በትክክል መልሰሃል!`);
-            // Immediate check and progression for tie-breaker
-            if (tiedPlayers.length === 1) { // If only one player is left
-                endGame(tiedPlayers[0].name);
-            } else {
-                nextTieBreakerTurn();
-            }
-            return; // Exit here, tie-breaker logic handles the next step
-        } else {
-            currentPlayer.score++;
-            currentPlayer.questionCount++;
-        }
-    } else {
-        // Wrong Answer Logic (New Requirement)
-        speak("ትክክል አይደለም!");
-        questionBox.classList.add('shake');
-        setTimeout(() => questionBox.classList.remove('shake'), 500);
-
-        if (isTieBreakerMode) {
-            // Player is eliminated from the tie-breaker round
-            speak(`${currentPlayer.name} ከውድድሩ ወጥተሃል።`);
-            tiedPlayers = tiedPlayers.filter(p => p !== currentPlayer);
-            if (tiedPlayers.length === 1) { // Only one player remains
-                endGame(tiedPlayers[0].name);
-                return;
-            } else if (tiedPlayers.length === 0) { // All eliminated (very rare tie)
-                endGame("No one");
-                return;
-            }
-        } else {
-            currentPlayer.questionCount++; // Still count the question attempt
-        }
-    }
-
-    // Normal Game Flow: Pass turn to the next player
-    nextTurn();
-}
-
-function nextTurn() {
-    // Check for game end condition before moving to next player
-    if (isGameOver() && !isTieBreakerMode) {
-        checkAndStartTieBreaker();
-        return;
-    }
-
-    // Move to the next player
-    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-    
-    // Skip players who have finished all their questions (only in main game)
-    if (!isTieBreakerMode) {
-        let originalIndex = currentPlayerIndex;
-        while (players[currentPlayerIndex].questionCount >= TOTAL_QUESTIONS_PER_PLAYER) {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-            // If we circled back to the starting point, all players must be finished.
-            if (currentPlayerIndex === originalIndex) {
-                checkAndStartTieBreaker();
-                return;
-            }
-        }
-    }
-    
-    startTurn();
-}
-
-function isGameOver() {
-    return players.every(p => p.questionCount >= TOTAL_QUESTIONS_PER_PLAYER);
-}
-
-// --- Tie Breaker Logic ---
-function checkAndStartTieBreaker() {
-    const scores = players.map(p => p.score);
-    const highScore = Math.max(...scores);
-    
-    tiedPlayers = players.filter(p => p.score === highScore && p.score > 0);
-    
-    if (tiedPlayers.length > 1) {
-        // Start Tie-Breaker Mode
-        isTieBreakerMode = true;
-        // Shuffle the tied players to randomize the turn order
-        // This is a simple shuffle (Fisher-Yates is better but this is sufficient)
-        tiedPlayers.sort(() => Math.random() - 0.5);
-        
-        // Reset player index to the first tied player
-        currentPlayerIndex = players.findIndex(p => p === tiedPlayers[0]);
-        
-        speak(`ውድድሩ በእኩል ነጥብ ተጠናቋል። አሁን የእኩል ነጥብ ሰባሪ ጥያቄዎች ይቀርባሉ! ${tiedPlayers.map(p => p.name).join(', ')} ተዘጋጁ!`);
-        startTurn();
-    } else if (tiedPlayers.length === 1) {
-        // One winner found
-        endGame(tiedPlayers[0].name);
-    } else {
-        // No score or no players left
-        endGame("No one");
-    }
-}
-
-function nextTieBreakerTurn() {
-    // Find the current player's index within the 'players' array
-    const currentIndexInPlayers = players.findIndex(p => p === tiedPlayers[0]);
-    
-    // Cycle the `tiedPlayers` array to make the next player the first element
-    const nextPlayer = tiedPlayers.shift(); 
-    tiedPlayers.push(nextPlayer); 
-    
-    // Update the main index to the new current player
-    currentPlayerIndex = players.findIndex(p => p === tiedPlayers[0]);
-    
-    // Check for winner *after* the turn cycle in case only one is left
-    if (tiedPlayers.length === 1) {
-        endGame(tiedPlayers[0].name);
-    } else {
-        startTurn();
-    }
-}
-
-
-function endGame(winnerName) {
-    backgroundMusic.pause();
-    
-    const winnerMessage = winnerName !== "No one"
-        ? `አንተ ሻምፒዮን ነህ! በጣም አስገራሚ ነው! እንኳን ደስ አለህ ${winnerName}!`
-        : "ጨዋታው ተጠናቋል። ለሚቀጥለው ጊዜ መልካም
+    speakBtn.addEventListener('click', speakText);
+  </script>
+</body>
+</html>
